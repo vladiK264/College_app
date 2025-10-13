@@ -1,0 +1,55 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15" version="28.2.5">
+  <diagram name="Страница — 1" id="SUAvbBEVkoSSvMeFMMyk">
+    <mxGraphModel dx="2043" dy="821" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-1" value="Teacher" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-120" y="140" width="130" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-8" value="id int&lt;div&gt;name string&lt;/div&gt;&lt;div&gt;specialization string&lt;/div&gt;&lt;div&gt;qualification string&lt;/div&gt;&lt;div&gt;max_hours&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="iiSKvk1V2bSiOM2fHAXe-1" vertex="1">
+          <mxGeometry y="30" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-2" value="Course" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="90" y="150" width="130" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-10" value="id int&lt;div&gt;name string&lt;/div&gt;&lt;div&gt;semestr int&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="iiSKvk1V2bSiOM2fHAXe-2" vertex="1">
+          <mxGeometry x="10" y="30" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-3" value="Group" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-120" y="350" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-11" value="id int&lt;div&gt;name string&lt;/div&gt;&lt;div&gt;year int&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="iiSKvk1V2bSiOM2fHAXe-3" vertex="1">
+          <mxGeometry y="20" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-5" value="TeachingLoad" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="310" y="140" width="130" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-13" value="Id int&lt;div&gt;Teacher_Id int&lt;/div&gt;&lt;div&gt;course_Id int&amp;nbsp;&lt;/div&gt;&lt;div&gt;group_Id int&lt;/div&gt;&lt;div&gt;hours int&lt;/div&gt;&lt;div&gt;semestr int&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="iiSKvk1V2bSiOM2fHAXe-5" vertex="1">
+          <mxGeometry x="15" y="20" width="100" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-16" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=1.015;exitY=0.6;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="iiSKvk1V2bSiOM2fHAXe-8" target="iiSKvk1V2bSiOM2fHAXe-2" edge="1">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="10" y="440" as="sourcePoint" />
+            <mxPoint x="110" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-18" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="iiSKvk1V2bSiOM2fHAXe-5" edge="1">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="220" y="210" as="sourcePoint" />
+            <mxPoint x="98" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiSKvk1V2bSiOM2fHAXe-31" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="iiSKvk1V2bSiOM2fHAXe-3" edge="1">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="580" y="705" as="sourcePoint" />
+            <mxPoint x="310" y="250" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="390" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

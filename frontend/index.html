@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Нагрузка преподавателей</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Добавить преподавателя</h1>
+    <form id="teacherForm">
+      <input name="name" placeholder="ФИО" required>
+      <input name="specialization" placeholder="Специализация" required>
+      <input name="qualification" placeholder="Квалификация" required>
+      <input name="max_hours" type="number" placeholder="Макс. часы" required>
+      <button type="submit">Добавить</button>
+    </form>
+
+    <h2>Список преподавателей</h2>
+    <ul id="teacherList"></ul>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
