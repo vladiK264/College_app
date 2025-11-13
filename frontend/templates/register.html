@@ -1,0 +1,23 @@
+<body>
+  <div class="form-wrapper">
+    <form method="post" action="/register_form">
+      <h2>Регистрация</h2>
+
+      {% if request.query_params.get('success') == 'true' %}
+        <div class="message success">✅ Регистрация прошла успешно!</div>
+      {% elif request.query_params.get('error') == 'exists' %}
+        <div class="message error">❌ Пользователь уже существует</div>
+      {% endif %}
+
+      <input type="email" name="email" placeholder="Email для регистрации" required>
+      <input type="password" name="password" placeholder="Пароль для входа" required>
+
+      <hr>
+
+      <input type="email" name="smtp_email" placeholder="Ваша Yandex-почта для отправки" required>
+      <input type="password" name="smtp_password" placeholder="Пароль приложения от Yandex" required>
+
+      <button type="submit">Зарегистрироваться и отправить письмо</button>
+    </form>
+  </div>
+</body>

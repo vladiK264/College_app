@@ -62,3 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadTeachers();
 });
+
+document.getElementById("distributeBtn").addEventListener("click", async () => {
+  const res = await fetch("/distribute", { method: "POST" });
+  if (res.ok) {
+    alert("✅ Распределение выполнено!");
+  } else {
+    alert("❌ Ошибка при распределении.");
+  }
+});

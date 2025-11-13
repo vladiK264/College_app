@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
+# ---------- Преподаватели ----------
 
 class TeacherCreate(BaseModel):
     name: str
@@ -10,14 +12,19 @@ class Teacher(TeacherCreate):
     id: int
 
     class Config:
-        from_attributes = True  # заменяет orm_mode в Pydantic v2
+        from_attributes = True  # Pydantic v2: заменяет orm_mode
 
-class Teacher(BaseModel):
+# ---------- Пользователи ----------
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserOut(BaseModel):
     id: int
-    name: str
-    specialization: str
-    qualification: str
-    max_hours: int
+    email: EmailStr
+    is_active: bool
+    is_verified: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True

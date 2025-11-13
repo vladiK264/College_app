@@ -64,3 +64,27 @@ ul li {
   color: #1c2c4c;
   border-left: 4px solid #3a6f7d;
 }
+
+.message {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.message.success {
+  color: green;
+}
+
+.message.error {
+  color: red;
+}
+
+.form-wrapper {
+  max-width: 400px;
+  margin: 40px auto;
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(28, 44, 76, 0.1);
+}
