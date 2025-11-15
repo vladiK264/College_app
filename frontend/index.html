@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <link rel="icon" href="icons8-учебник-66.png" type="image/x-icon">
+  <link rel="icon" href="/static/icons8-учебник-66.png" type="image/x-icon">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Нагрузка преподавателей</title>
@@ -9,23 +9,54 @@
 </head>
 <body>
   <div class="container">
-    <h1>Добавить преподавателя</h1>
-    <form id="teacherForm">
-      <input name="name" placeholder="ФИО" required>
-      <input name="specialization" placeholder="Специализация" required>
-      <input name="qualification" placeholder="Квалификация" required>
-      <input name="max_hours" type="number" placeholder="Макс. часы" required>
-      <button type="submit">Добавить</button>
-    </form>
+    <h1>📘 Управление учебной нагрузкой</h1>
 
-    <h2>Список преподавателей</h2>
-    <ul id="teacherList"></ul>
+    <section class="form-section">
+      <h2>➕ Добавить преподавателя</h2>
+      <form id="teacherForm">
+        <input name="name" placeholder="ФИО" required>
+        <input name="specialization" placeholder="Специализация" required>
+        <input name="qualification" placeholder="Квалификация" required>
+        <input name="max_hours" type="number" placeholder="Макс. часы" required>
+        <button type="submit">Добавить</button>
+      </form>
+    </section>
+
+    <section class="list-section">
+      <h2>👨‍🏫 Список преподавателей</h2>
+      <ul id="teacherList"></ul>
+    </section>
+
+    <section class="actions-section">
+      <h2>⚙️ Управление нагрузкой</h2>
+    <div class="button-group">
+      <button onclick="location.href='/distribute.html'" class="btn-blue">📊 Распределить</button>
+      <button onclick="location.href='/assign.html'" class="btn-green">📌 Назначить</button>
+      <button onclick="location.href='/remove.html'" class="btn-red">❌ Снять</button>
+      <button onclick="location.href='/check.html'" class="btn-yellow">⚠️ Проверить перегрузку</button>
+      <button onclick="location.href='/reserve.html'" class="btn-purple">🕒 Из резерва</button>
+    </div>
+    </section>
+    
+    <section class="report-section">
+      <h2>📄 Отчёты</h2>
+    <div class="button-group">
+      <button onclick="location.href='/report_current.html'" class="btn-blue">📋 Текущая нагрузка</button>
+      <button onclick="location.href='/report_semester.html'" class="btn-green">📅 За семестр</button>
+    </div>
 
 
-
-    <button id="distributeBtn">Распределить нагрузку</button>
+    </section>
   </div>
 
   <script src="/static/script.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+ 

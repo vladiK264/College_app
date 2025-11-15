@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><title>Назначить</title><link rel="stylesheet" href="/static/style.css"></head>
+<body><div class="container">
+  <h1>📌 Назначение нагрузки</h1>
+  <div class="button-group">
+    <button onclick="location.href='/'" class="btn-blue">⬅️ Назад</button>
+    <button onclick="run()" class="btn-green">✅ Назначить</button>
+  </div>
+</div>
+<script>
+  function run() {
+    fetch("/assign_load", { method: "POST" })
+      .then(r => r.json()).then(d => alert(d.message))
+      .catch(e => alert("❌ Ошибка: " + e.message));
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Распределение нагрузки</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Распределение нагрузки</h1>
+    <p>Здесь будет логика распределения нагрузки между преподавателями.</p>
+
+    <div class="button-group">
+      <button onclick="window.location.href='/'" class="btn-blue">⬅️ Назад на главную</button>
+      <button onclick="runDistribute()" class="btn-green">🚀 Запустить распределение</button>
+    </div>
+  </div>
+
+  <script>
+    function runDistribute() {
+      fetch("/distribute", { method: "POST" })
+        .then(res => res.json())
+        .then(data => alert(data.message || "✅ Распределение завершено"))
+        .catch(err => alert("❌ Ошибка: " + err.message));
+    }
+  </script>
+</body>
+</html>

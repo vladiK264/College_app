@@ -1,0 +1,151 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #e7ecef;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  background-color: #a4cfd1;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(28, 44, 76, 0.2);
+}
+
+h1, h2 {
+  text-align: center;
+  color: #1c2c4c;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+form input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #cdd3d5;
+  border-radius: 6px;
+  background-color: #e7ecef;
+  color: #1c2c4c;
+}
+
+form button {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #3a6f7d, #4f8a99);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+form button:hover {
+  background: linear-gradient(135deg, #2c5560, #3a6f7d);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+}
+
+form button:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.button-group {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.button-group button {
+  display: inline-block;
+  width: 180px;
+  margin: 10px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Цветовые стили */
+.btn-blue {
+  background: linear-gradient(135deg, #3a6f7d, #4f8a99);
+}
+.btn-green {
+  background: linear-gradient(135deg, #3a7d5a, #4fc98a);
+}
+.btn-red {
+  background: linear-gradient(135deg, #7d3a3a, #c94f4f);
+}
+.btn-yellow {
+  background: linear-gradient(135deg, #bfa93a, #f5d142);
+  color: #333;
+}
+.btn-purple {
+  background: linear-gradient(135deg, #6a3a7d, #a94fc9);
+}
+
+.button-group button:hover.btn-blue {
+  background: linear-gradient(135deg, #2c5560, #3a6f7d);
+}
+.button-group button:hover.btn-green {
+  background: linear-gradient(135deg, #2c7d4f, #3ac97d);
+}
+.button-group button:hover.btn-red {
+  background: linear-gradient(135deg, #5a2c2c, #a93a3a);
+}
+.button-group button:hover.btn-yellow {
+  background: linear-gradient(135deg, #a68f2c, #e5c132);
+}
+.button-group button:hover.btn-purple {
+  background: linear-gradient(135deg, #522c5a, #8a3aa9);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+ul li {
+  background-color: #e7ecef;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #1c2c4c;
+  border-left: 4px solid #3a6f7d;
+}
+
+section {
+  margin-top: 30px;
+  border-top: 1px solid #cdd3d5;
+  padding-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 20px;
+    padding: 20px;
+  }
+
+  .button-group button,
+  form input {
+    width: 100%;
+    font-size: 14px;
+    padding: 10px;
+  }
+}

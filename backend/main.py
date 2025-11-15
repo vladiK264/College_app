@@ -10,12 +10,19 @@ import backend.schemas as schemas
 from backend.utils import hash_password, generate_token
 from backend.email_utils import send_email
 
+# Создание таблиц
 models.Base.metadata.create_all(bind=database.engine)
 
+# Инициализация приложения
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# ✅ Исправлено: путь к статикам
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
+# Шаблоны (используются только для register.html)
 templates = Jinja2Templates(directory="frontend/templates")
 
+# Подключение к БД
 def get_db():
     db = database.SessionLocal()
     try:
@@ -27,6 +34,41 @@ def get_db():
 @app.get("/", response_class=HTMLResponse)
 def read_root():
     with open("frontend/index.html", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/distribute.html", response_class=HTMLResponse)
+def distribute_page():
+    with open("frontend/distribute.html", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/assign.html", response_class=HTMLResponse)
+def assign_page():
+    with open("frontend/assign.html", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/remove.html", response_class=HTMLResponse)
+def remove_page():
+    with open("frontend/remove.html", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/check.html", response_class=HTMLResponse)
+def check_page():
+    with open("frontend/check.html", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/reserve.html", response_class=HTMLResponse)
+def reserve_page():
+    with open("frontend/reserve.html", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/report_current.html", response_class=HTMLResponse)
+def report_current_page():
+    with open("frontend/report_current.html", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/report_semester.html", response_class=HTMLResponse)
+def report_semester_page():
+    with open("frontend/report_semester.html", encoding="utf-8") as f:
         return f.read()
 
 # ---------- Страница входа ----------
@@ -84,25 +126,48 @@ async def authenticate(request: Request):
         content={"message": "Неверный логин или пароль"}
     )
 
-# ---------- Получение списка преподавателей ----------
+# ---------- Преподаватели ----------
 @app.get("/teachers", response_model=list[schemas.Teacher])
 def list_teachers(db: Session = Depends(get_db)):
     return crud.get_teachers(db)
 
-# ---------- Добавление преподавателя ----------
 @app.post("/teachers", response_model=schemas.Teacher)
 def add_teacher(teacher: schemas.TeacherCreate, db: Session = Depends(get_db)):
     return crud.create_teacher(db, teacher)
 
-# ---------- Удаление преподавателя ----------
 @app.delete("/teachers/{teacher_id}")
 def delete_teacher(teacher_id: int, db: Session = Depends(get_db)):
     if crud.delete_teacher(db, teacher_id):
         return {"message": "Удалено"}
     return {"error": "Не найдено"}
 
+# ---------- Нагрузка ----------
 @app.post("/distribute")
 def distribute_load():
-    # Здесь будет логика распределения
     print("📊 Распределение нагрузки выполнено.")
     return {"message": "Распределение завершено"}
+
+@app.get("/check_overload")
+def check_overload():
+    return {"message": "Проверка перегрузки завершена"}
+
+@app.post("/assign_load")
+def assign_load():
+    return {"message": "Нагрузка назначена"}
+
+@app.post("/remove_load")
+def remove_load():
+    return {"message": "Нагрузка снята"}
+
+@app.post("/assign_from_reserve")
+def assign_from_reserve():
+    return {"message": "Назначено из резерва"}
+
+# ---------- Отчёты ----------
+@app.get("/report/current")
+def current_report():
+    return {"report": "Текущая нагрузка: ..."}
+
+@app.get("/report/semester")
+def semester_report():
+    return {"report": "Нагрузка за семестр: ..."}
