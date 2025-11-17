@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <link rel="icon" href="/static/icons8-учебник-66.png" type="image/x-icon">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Нагрузка преподавателей</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="/static/icons8-учебник-66.png" type="image/x-icon" />
+  <link rel="stylesheet" href="/static/style_vlad_1.css" />
+  <script src="/static/script.js" defer></script>
 </head>
 <body>
+  <div class="clouds">
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
+  </div>
+
   <div class="container">
     <h1>📘 Управление учебной нагрузкой</h1>
 
     <section class="form-section">
       <h2>➕ Добавить преподавателя</h2>
       <form id="teacherForm">
-        <input name="name" placeholder="ФИО" required>
-        <input name="specialization" placeholder="Специализация" required>
-        <input name="qualification" placeholder="Квалификация" required>
-        <input name="max_hours" type="number" placeholder="Макс. часы" required>
+        <input name="name" placeholder="ФИО" required />
+        <input name="specialization" placeholder="Специализация" required />
+        <input name="qualification" placeholder="Квалификация" required />
+        <input name="max_hours" type="number" placeholder="Макс. часы" required />
         <button type="submit">Добавить</button>
       </form>
     </section>
@@ -29,34 +36,28 @@
 
     <section class="actions-section">
       <h2>⚙️ Управление нагрузкой</h2>
-    <div class="button-group">
-      <button onclick="location.href='/distribute.html'" class="btn-blue">📊 Распределить</button>
-      <button onclick="location.href='/assign.html'" class="btn-green">📌 Назначить</button>
-      <button onclick="location.href='/remove.html'" class="btn-red">❌ Снять</button>
-      <button onclick="location.href='/check.html'" class="btn-yellow">⚠️ Проверить перегрузку</button>
-      <button onclick="location.href='/reserve.html'" class="btn-purple">🕒 Из резерва</button>
-    </div>
+      <div class="button-group">
+        <button id="distributeBtn" class="btn-blue">📊 Распределить</button>
+        <button id="assignBtn" class="btn-green">📌 Назначить</button>
+        <button id="removeLoadBtn" class="btn-red">❌ Снять</button>
+        <button id="checkOverloadBtn" class="btn-yellow">⚠️ Проверить перегрузку</button>
+        <button id="reserveBtn" class="btn-purple">🕒 Из резерва</button>
+      </div>
     </section>
-    
+
     <section class="report-section">
       <h2>📄 Отчёты</h2>
-    <div class="button-group">
-      <button onclick="location.href='/report_current.html'" class="btn-blue">📋 Текущая нагрузка</button>
-      <button onclick="location.href='/report_semester.html'" class="btn-green">📅 За семестр</button>
-    </div>
-
-
+        <div class="button-group">
+          <button class="btn-unified" id="addGroupBtn">➕ Добавить группу</button>
+          <button class="btn-unified" id="reportCurrentBtn">📋 Текущая нагрузка</button>
+          <button class="btn-unified" id="reportSemesterBtn">📅 За семестр</button>
+        </div>
     </section>
   </div>
 
-  <script src="/static/script.js"></script>
+
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal" id="modalContent"></div>
+  </div>
 </body>
 </html>
-
-
-
-
-
-
-
- 

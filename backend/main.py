@@ -1,28 +1,26 @@
 from fastapi import FastAPI, Depends, Request, status, Form
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from typing import List
+
 import backend.models as models
 import backend.database as database
 import backend.crud as crud
 import backend.schemas as schemas
 from backend.utils import hash_password, generate_token
 from backend.email_utils import send_email
+from backend.models import Teacher, Group, TeachingLoad
+from backend.schemas import TeachingLoadReport
 
-# Создание таблиц
+
+app = FastAPI()
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+templates = Jinja2Templates(directory="frontend/templates")
 models.Base.metadata.create_all(bind=database.engine)
 
-# Инициализация приложения
-app = FastAPI()
 
-# ✅ Исправлено: путь к статикам
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
-
-# Шаблоны (используются только для register.html)
-templates = Jinja2Templates(directory="frontend/templates")
-
-# Подключение к БД
 def get_db():
     db = database.SessionLocal()
     try:
@@ -30,59 +28,47 @@ def get_db():
     finally:
         db.close()
 
-# ---------- Главная страница ----------
-@app.get("/", response_class=HTMLResponse)
-def read_root():
-    with open("frontend/index.html", encoding="utf-8") as f:
+
+def load_html(filename: str) -> str:
+    with open(f"frontend/{filename}", encoding="utf-8") as f:
         return f.read()
+
+
+@app.get("/", response_class=HTMLResponse)
+def read_root(): return load_html("index.html")
 
 @app.get("/distribute.html", response_class=HTMLResponse)
-def distribute_page():
-    with open("frontend/distribute.html", encoding="utf-8") as f:
-        return f.read()
+def distribute_page(): return load_html("distribute.html")
 
 @app.get("/assign.html", response_class=HTMLResponse)
-def assign_page():
-    with open("frontend/assign.html", encoding="utf-8") as f:
-        return f.read()
+def assign_page(): return load_html("assign.html")
 
 @app.get("/remove.html", response_class=HTMLResponse)
-def remove_page():
-    with open("frontend/remove.html", encoding="utf-8") as f:
-        return f.read()
+def remove_page(): return load_html("remove.html")
 
 @app.get("/check.html", response_class=HTMLResponse)
-def check_page():
-    with open("frontend/check.html", encoding="utf-8") as f:
-        return f.read()
+def check_page(): return load_html("check.html")
 
 @app.get("/reserve.html", response_class=HTMLResponse)
-def reserve_page():
-    with open("frontend/reserve.html", encoding="utf-8") as f:
-        return f.read()
+def reserve_page(): return load_html("reserve.html")
 
 @app.get("/report_current.html", response_class=HTMLResponse)
-def report_current_page():
-    with open("frontend/report_current.html", encoding="utf-8") as f:
-        return f.read()
+def report_current_page(): return load_html("report_current.html")
 
 @app.get("/report_semester.html", response_class=HTMLResponse)
-def report_semester_page():
-    with open("frontend/report_semester.html", encoding="utf-8") as f:
-        return f.read()
+def report_semester_page(): return load_html("report_semester.html")
 
-# ---------- Страница входа ----------
 @app.get("/login", response_class=HTMLResponse)
-def login_page():
-    with open("frontend/login.html", encoding="utf-8") as f:
-        return f.read()
+def login_page(): return load_html("login.html")
 
-# ---------- Страница регистрации ----------
 @app.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
-# ---------- Обработка регистрации ----------
+@app.get("/group_form.html", response_class=HTMLResponse)
+def group_form_page():
+    return load_html("group_form.html")
+
 @app.post("/register_form")
 def register_user(
     email: str = Form(...),
@@ -91,8 +77,7 @@ def register_user(
     smtp_password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    existing_user = crud.get_user_by_email(db, email)
-    if existing_user:
+    if crud.get_user_by_email(db, email):
         return RedirectResponse("/register?error=exists", status_code=303)
 
     token = generate_token()
@@ -113,21 +98,16 @@ def register_user(
 
     return RedirectResponse("/register?success=true", status_code=303)
 
-# ---------- Обработка авторизации (заглушка) ----------
+
 @app.post("/auth")
 async def authenticate(request: Request):
     data = await request.json()
-    username = data.get("username")
-    password = data.get("password")
-    if username == "admin" and password == "1234":
+    if data.get("username") == "admin" and data.get("password") == "1234":
         return {"message": "Успешный вход"}
-    return JSONResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        content={"message": "Неверный логин или пароль"}
-    )
+    return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "Неверный логин или пароль"})
 
-# ---------- Преподаватели ----------
-@app.get("/teachers", response_model=list[schemas.Teacher])
+
+@app.get("/teachers", response_model=List[schemas.Teacher])
 def list_teachers(db: Session = Depends(get_db)):
     return crud.get_teachers(db)
 
@@ -135,21 +115,60 @@ def list_teachers(db: Session = Depends(get_db)):
 def add_teacher(teacher: schemas.TeacherCreate, db: Session = Depends(get_db)):
     return crud.create_teacher(db, teacher)
 
+@app.put("/teachers/{teacher_id}", response_model=schemas.Teacher)
+def update_teacher(teacher_id: int, data: schemas.TeacherUpdate, db: Session = Depends(get_db)):
+    return crud.update_teacher(db, teacher_id, data)
+
 @app.delete("/teachers/{teacher_id}")
 def delete_teacher(teacher_id: int, db: Session = Depends(get_db)):
     if crud.delete_teacher(db, teacher_id):
         return {"message": "Удалено"}
     return {"error": "Не найдено"}
 
-# ---------- Нагрузка ----------
+
+@app.post("/groups", response_model=schemas.Group)
+def add_group(group: schemas.GroupCreate, db: Session = Depends(get_db)):
+    return crud.create_group(db, group)
+
+
+@app.get("/api/report_semestr", response_model=List[TeachingLoadReport])
+def report_semestr(semester: int, db: Session = Depends(get_db)):
+    query = (
+        db.query(
+            Teacher.name.label("teacher"),
+            Group.name.label("group"),
+            TeachingLoad.subject,
+            TeachingLoad.assigned_hours,
+            TeachingLoad.completed_hours
+        )
+        .join(TeachingLoad, TeachingLoad.teacher_id == Teacher.id)
+        .join(Group, TeachingLoad.group_id == Group.id)
+        .filter(TeachingLoad.semester == semester)
+        .all()
+    )
+    return [
+        TeachingLoadReport(
+            teacher=row.teacher,
+            group=row.group,
+            subject=row.subject,
+            assigned_hours=row.assigned_hours,
+            completed_hours=row.completed_hours
+        )
+        for row in query
+    ]
+
+@app.get("/report/current")
+def current_report():
+    return {"report": "Текущая нагрузка: ..."}
+
+@app.get("/report/semester")
+def semester_report():
+    return {"report": "Нагрузка за семестр: ..."}
+
 @app.post("/distribute")
 def distribute_load():
     print("📊 Распределение нагрузки выполнено.")
     return {"message": "Распределение завершено"}
-
-@app.get("/check_overload")
-def check_overload():
-    return {"message": "Проверка перегрузки завершена"}
 
 @app.post("/assign_load")
 def assign_load():
@@ -163,11 +182,6 @@ def remove_load():
 def assign_from_reserve():
     return {"message": "Назначено из резерва"}
 
-# ---------- Отчёты ----------
-@app.get("/report/current")
-def current_report():
-    return {"report": "Текущая нагрузка: ..."}
-
-@app.get("/report/semester")
-def semester_report():
-    return {"report": "Нагрузка за семестр: ..."}
+@app.get("/check_overload")
+def check_overload():
+    return {"message": "Проверка перегрузки завершена"}

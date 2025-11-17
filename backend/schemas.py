@@ -1,6 +1,8 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional
+from pydantic import BaseModel
 
-# ---------- Преподаватели ----------
+
 
 class TeacherCreate(BaseModel):
     name: str
@@ -8,13 +10,81 @@ class TeacherCreate(BaseModel):
     qualification: str
     max_hours: int
 
-class Teacher(TeacherCreate):
+class Teacher(BaseModel):
     id: int
+    name: str
+    specialization: str
+    qualification: str
+    max_hours: int
 
     class Config:
-        from_attributes = True  # Pydantic v2: заменяет orm_mode
+        from_attributes = True
 
-# ---------- Пользователи ----------
+
+
+
+class GroupCreate(BaseModel):
+    name: str
+
+class Group(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+
+
+class TeachingLoadCreate(BaseModel):
+    teacher_id: int
+    group_id: int
+    subject: str
+    assigned_hours: int
+    completed_hours: int
+    semester: int
+    is_reserved: bool = False
+
+class TeachingLoad(BaseModel):
+    id: int
+    teacher_id: int
+    group_id: int
+    subject: str
+    assigned_hours: int
+    completed_hours: int
+    semester: int
+    is_reserved: bool
+
+    class Config:
+        from_attributes = True
+
+
+
+
+class TeachingLoadDetailed(BaseModel):
+    id: int
+    subject: str
+    assigned_hours: int
+    completed_hours: int
+    semester: int
+    is_reserved: bool
+    teacher: Teacher
+    group: Group
+
+    class Config:
+        from_attributes = True
+
+
+
+
+class TeachingLoadReport(BaseModel):
+    teacher: str
+    group: str
+    subject: str
+    assigned_hours: int
+    completed_hours: int
+
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -28,3 +98,14 @@ class UserOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class GroupCreate(BaseModel):
+    name: str
+    year: int
+
+
+
+class TeacherUpdate(BaseModel):
+    specialization: str
+    qualification: str
+    max_hours: int

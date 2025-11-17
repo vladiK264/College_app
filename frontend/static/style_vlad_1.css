@@ -1,0 +1,231 @@
+body {
+  font-family: 'Segoe UI', 'Inter', sans-serif;
+  background: linear-gradient(to bottom, #dfe9f3, #e7ecef);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 960px;
+  margin: 60px auto;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(28, 44, 76, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+h1, h2 {
+  text-align: center;
+  color: #1c2c4c;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+form input {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #cdd3d5;
+  border-radius: 8px;
+  background-color: #f5f8fa;
+  color: #1c2c4c;
+  transition: box-shadow 0.2s ease;
+}
+
+form input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 138, 153, 0.3);
+}
+
+form button {
+  padding: 14px 18px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #4f8a99;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+form button:hover {
+  background-color: #3a6f7d;
+  transform: translateY(-1px);
+}
+
+form button:active {
+  transform: scale(0.98);
+}
+
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.button-group button {
+  min-width: 160px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  background-color: #4f8a99;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.button-group button:hover {
+  background-color: #3a6f7d;
+  transform: scale(1.03);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+ul li {
+  background-color: #f5f8fa;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #1c2c4c;
+  border-left: 4px solid #4f8a99;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+section {
+  margin-top: 40px;
+  border-top: 1px solid #cdd3d5;
+  padding-top: 30px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 20px;
+    padding: 20px;
+  }
+
+  h1, h2 {
+    font-size: 20px;
+  }
+
+  form input,
+  .button-group button {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  ul li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+
+.fade-in {
+  animation: fadeIn 0.6s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+
+.btn-action {
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.btn-action.edit {
+  background-color: #5c8bc0;
+  color: #fff;
+}
+
+.btn-action.edit:hover {
+  background-color: #3f6ea3;
+}
+
+.btn-action.delete {
+  background-color: #d96c6c;
+  color: #fff;
+}
+
+.btn-action.delete:hover {
+  background-color: #b94e4e;
+}
+
+#modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: none; 
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#modalOverlay {
+  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.3);
+}
+#modalContent {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  min-width: 300px;
+  max-width: 90vw;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
