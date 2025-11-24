@@ -4,16 +4,31 @@
   <meta charset="UTF-8">
   <title>Распределение нагрузки</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/script_distribute.js" defer></script>
 </head>
 <body>
   <div class="container">
     <h1>📊 Распределение нагрузки</h1>
-    <p>Здесь будет логика распределения нагрузки между преподавателями.</p>
+    <p>Выберите преподавателя и группу для назначения или снятия нагрузки.</p>
+
+    <div class="form-group">
+      <label for="teacherSelect">Преподаватель:</label>
+      <select id="teacherSelect" class="select"></select>
+    </div>
+
+    <div class="form-group">
+      <label for="groupSelect">Группа:</label>
+      <select id="groupSelect" class="select"></select>
+    </div>
 
     <div class="button-group">
       <button onclick="window.location.href='/'" class="btn-blue">⬅️ Назад на главную</button>
-      <button onclick="runDistribute()" class="btn-green">🚀 Запустить распределение</button>
+      <button id="assignBtn" class="btn-green">✅ Назначить нагрузку</button>
+      <button id="removeBtn" class="btn-red">❌ Снять нагрузку</button>
+      <button onclick="runDistribute()" class="btn-yellow">🚀 Автораспределение</button>
     </div>
+
+    <div id="status" class="status"></div>
   </div>
 
   <script>

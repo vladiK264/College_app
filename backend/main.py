@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends, Request, status, Form
+from fastapi import FastAPI, Depends, Request, status, Form, Body
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List
 
+# Импорты проекта
 import backend.models as models
 import backend.database as database
 import backend.crud as crud
@@ -14,13 +15,13 @@ from backend.email_utils import send_email
 from backend.models import Teacher, Group, TeachingLoad
 from backend.schemas import TeachingLoadReport
 
-
+# Инициализация FastAPI
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 models.Base.metadata.create_all(bind=database.engine)
 
-
+# Зависимость для подключения к БД
 def get_db():
     db = database.SessionLocal()
     try:
@@ -28,12 +29,12 @@ def get_db():
     finally:
         db.close()
 
-
+# Загрузка HTML-файлов
 def load_html(filename: str) -> str:
     with open(f"frontend/{filename}", encoding="utf-8") as f:
         return f.read()
 
-
+# 📄 Страницы
 @app.get("/", response_class=HTMLResponse)
 def read_root(): return load_html("index.html")
 
@@ -66,9 +67,9 @@ def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
 @app.get("/group_form.html", response_class=HTMLResponse)
-def group_form_page():
-    return load_html("group_form.html")
+def group_form_page(): return load_html("group_form.html")
 
+# 👤 Регистрация
 @app.post("/register_form")
 def register_user(
     email: str = Form(...),
@@ -98,7 +99,7 @@ def register_user(
 
     return RedirectResponse("/register?success=true", status_code=303)
 
-
+# 🔐 Авторизация
 @app.post("/auth")
 async def authenticate(request: Request):
     data = await request.json()
@@ -106,7 +107,7 @@ async def authenticate(request: Request):
         return {"message": "Успешный вход"}
     return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": "Неверный логин или пароль"})
 
-
+# 👨‍🏫 Преподаватели
 @app.get("/teachers", response_model=List[schemas.Teacher])
 def list_teachers(db: Session = Depends(get_db)):
     return crud.get_teachers(db)
@@ -125,12 +126,16 @@ def delete_teacher(teacher_id: int, db: Session = Depends(get_db)):
         return {"message": "Удалено"}
     return {"error": "Не найдено"}
 
-
+# 👥 Группы
 @app.post("/groups", response_model=schemas.Group)
 def add_group(group: schemas.GroupCreate, db: Session = Depends(get_db)):
     return crud.create_group(db, group)
 
+@app.get("/groups", response_model=List[schemas.Group])
+def get_groups(db: Session = Depends(get_db)):
+    return db.query(Group).all()
 
+# 📊 Отчёты
 @app.get("/api/report_semestr", response_model=List[TeachingLoadReport])
 def report_semestr(semester: int, db: Session = Depends(get_db)):
     query = (
@@ -165,18 +170,60 @@ def current_report():
 def semester_report():
     return {"report": "Нагрузка за семестр: ..."}
 
+# 📦 Действия с нагрузкой
 @app.post("/distribute")
 def distribute_load():
     print("📊 Распределение нагрузки выполнено.")
     return {"message": "Распределение завершено"}
 
 @app.post("/assign_load")
-def assign_load():
+def assign_load(data: dict = Body(...), db: Session = Depends(get_db)):
+    teacher_id = data.get("teacher_id")
+    group_id = data.get("group_id")
+
+    if not teacher_id or not group_id:
+        return JSONResponse(status_code=400, content={"message": "Нужно указать teacher_id и group_id"})
+
+    existing = db.query(TeachingLoad).filter_by(
+        teacher_id=teacher_id,
+        group_id=group_id,
+        subject="Общее",
+        semester=1
+    ).first()
+
+    if existing:
+        return {"message": "Нагрузка уже назначена"}
+
+    load = TeachingLoad(
+        teacher_id=teacher_id,
+        group_id=group_id,
+        subject="Общее",
+        assigned_hours=20,
+        completed_hours=0,
+        semester=1,
+        is_reserved=False
+    )
+    db.add(load)
+    db.commit()
     return {"message": "Нагрузка назначена"}
 
 @app.post("/remove_load")
-def remove_load():
-    return {"message": "Нагрузка снята"}
+def remove_load(data: dict = Body(...), db: Session = Depends(get_db)):
+    teacher_id = data.get("teacher_id")
+    group_id = data.get("group_id")
+
+    if not teacher_id or not group_id:
+        return JSONResponse(status_code=400, content={"message": "Нужно указать teacher_id и group_id"})
+
+    deleted = db.query(TeachingLoad).filter_by(
+        teacher_id=teacher_id,
+        group_id=group_id,
+        subject="Общее",
+        semester=1
+    ).delete()
+
+    db.commit()
+    return {"message": "Нагрузка снята" if deleted else "Нагрузка не найдена"}
 
 @app.post("/assign_from_reserve")
 def assign_from_reserve():

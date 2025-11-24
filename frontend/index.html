@@ -3,10 +3,772 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Нагрузка преподавателей</title>
-  <link rel="icon" href="/static/icons8-учебник-66.png" type="image/x-icon" />
-  <link rel="stylesheet" href="/static/style_vlad_1.css" />
-  <script src="/static/script.js" defer></script>
+  <title>Управление учебной нагрузкой преподавателей</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 50%, #fae8ff 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Cloud Background Animation */
+    .clouds {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .cloud {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.3;
+    }
+
+    .cloud1 {
+      top: 80px;
+      left: 40px;
+      width: 384px;
+      height: 384px;
+      background: #93c5fd;
+      animation: float1 30s linear infinite;
+    }
+
+    .cloud2 {
+      top: 160px;
+      right: 80px;
+      width: 320px;
+      height: 320px;
+      background: #c4b5fd;
+      animation: float2 25s linear infinite;
+    }
+
+    .cloud3 {
+      bottom: 80px;
+      left: 33%;
+      width: 288px;
+      height: 288px;
+      background: #a5b4fc;
+      animation: float3 35s linear infinite;
+    }
+
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(100px, 50px); }
+    }
+
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-80px, 30px); }
+    }
+
+    @keyframes float3 {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(60px, -40px); }
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Header */
+    header {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      animation: slideDown 0.5s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 0;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      padding: 0.75rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 32px;
+      height: 32px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .logo-text h1 {
+      font-size: 1.75rem;
+      color: #171717;
+      margin-bottom: 0.25rem;
+    }
+
+    .logo-text p {
+      font-size: 0.875rem;
+      color: #737373;
+    }
+
+    .header-badge {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      background: #eef2ff;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+    }
+
+    @media (min-width: 768px) {
+      .header-badge {
+        display: flex;
+      }
+    }
+
+    .header-badge svg {
+      width: 20px;
+      height: 20px;
+      stroke: #4f46e5;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .header-badge span {
+      color: #312e81;
+      font-size: 0.875rem;
+    }
+
+    /* Main Content */
+    main {
+      padding: 2rem 0;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    .section:nth-child(1) { animation-delay: 0.1s; }
+    .section:nth-child(2) { animation-delay: 0.2s; }
+    .section:nth-child(3) { animation-delay: 0.3s; }
+    .section:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-icon {
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .section-icon.green {
+      background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    }
+
+    .section-icon.blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    }
+
+    .section-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .section-title {
+      flex: 1;
+    }
+
+    .section-title h2 {
+      font-size: 1.5rem;
+      color: #171717;
+      margin-bottom: 0.25rem;
+    }
+
+    .section-title p {
+      font-size: 0.875rem;
+      color: #737373;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #404040;
+      font-size: 0.875rem;
+    }
+
+    .form-label svg {
+      width: 16px;
+      height: 16px;
+      stroke: #4f46e5;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d4d4d4;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Teacher List */
+    .teacher-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 0;
+    }
+
+    .empty-icon {
+      background: #f5f5f5;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+
+    .empty-icon svg {
+      width: 40px;
+      height: 40px;
+      stroke: #a3a3a3;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .empty-state p {
+      color: #737373;
+      margin-bottom: 0.25rem;
+    }
+
+    .empty-state small {
+      color: #a3a3a3;
+    }
+
+    .teacher-card {
+      background: linear-gradient(135deg, white 0%, #fafafa 100%);
+      border: 1px solid #e5e5e5;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      transition: all 0.3s;
+      animation: slideInLeft 0.3s ease-out;
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .teacher-card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .teacher-card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    @media (min-width: 1024px) {
+      .teacher-card-content {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .teacher-info {
+      flex: 1;
+    }
+
+    .teacher-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.75rem;
+    }
+
+    .teacher-name {
+      font-size: 1.25rem;
+      color: #171717;
+      margin-bottom: 0.5rem;
+    }
+
+    .teacher-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      color: #525252;
+      font-size: 0.875rem;
+    }
+
+    .teacher-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .teacher-meta-item svg {
+      width: 16px;
+      height: 16px;
+      stroke: #4f46e5;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .teacher-load {
+      margin-top: 0.75rem;
+    }
+
+    .load-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .load-text {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #404040;
+      font-size: 0.875rem;
+    }
+
+    .load-text svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .load-percentage {
+      color: #525252;
+      font-size: 0.875rem;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #e5e5e5;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.5s ease-out;
+    }
+
+    .progress-fill.green { background: #22c55e; }
+    .progress-fill.yellow { background: #eab308; }
+    .progress-fill.red { background: #ef4444; }
+
+    .btn-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-delete, .btn-edit {
+      padding: 0.75rem;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-delete {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .btn-delete:hover {
+      background: #fee2e2;
+    }
+
+    .btn-edit {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .btn-edit:hover {
+      background: #dbeafe;
+    }
+
+    .btn-delete svg, .btn-edit svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Action Grid */
+    .action-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .action-btn {
+      background: linear-gradient(135deg, var(--from), var(--to));
+      color: white;
+      padding: 1.5rem;
+      border: none;
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: left;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      animation: scaleIn 0.3s ease-out forwards;
+      opacity: 0;
+    }
+
+    .action-btn:nth-child(1) { animation-delay: 0.4s; --from: #3b82f6; --to: #2563eb; }
+    .action-btn:nth-child(2) { animation-delay: 0.45s; --from: #22c55e; --to: #16a34a; }
+    .action-btn:nth-child(3) { animation-delay: 0.5s; --from: #ef4444; --to: #dc2626; }
+    .action-btn:nth-child(4) { animation-delay: 0.55s; --from: #eab308; --to: #ca8a04; }
+    .action-btn:nth-child(5) { animation-delay: 0.6s; --from: #a855f7; --to: #9333ea; }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .action-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-btn svg {
+      width: 32px;
+      height: 32px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+      margin-bottom: 0.75rem;
+      transition: transform 0.3s;
+    }
+
+    .action-btn:hover svg {
+      transform: scale(1.1);
+    }
+
+    .action-btn p {
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+      max-width: 42rem;
+      width: 100%;
+      max-height: 90vh;
+      overflow: auto;
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: scale(0.95) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      position: sticky;
+      top: 0;
+      background: white;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+      border-radius: 1.5rem 1.5rem 0 0;
+    }
+
+    .modal-close {
+      background: #f5f5f5;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+    }
+
+    .modal-close:hover {
+      background: #e5e5e5;
+    }
+
+    .modal-close svg {
+      width: 20px;
+      height: 20px;
+      stroke: #404040;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .modal-content {
+      padding: 1.5rem;
+    }
+
+    .modal-content h3 {
+      font-size: 1.5rem;
+      color: #171717;
+      margin-bottom: 1rem;
+    }
+
+    .modal-content p {
+      color: #525252;
+      margin-bottom: 1.5rem;
+    }
+
+    .info-card {
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .info-card.blue {
+      background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+      border: 1px solid #bfdbfe;
+    }
+
+    .info-card.purple {
+      background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+      border: 1px solid #e9d5ff;
+    }
+
+    .info-card.green {
+      background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
+      border: 1px solid #bbf7d0;
+    }
+
+    .info-card.red {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+
+    .info-card h4 {
+      color: #171717;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-card p {
+      margin: 0;
+    }
+
+    .info-card.blue h4, .info-card.blue .value { color: #1e3a8a; }
+    .info-card.purple h4, .info-card.purple .value { color: #581c87; }
+    .info-card.green h4, .info-card.green .value { color: #14532d; }
+    .info-card.red h4, .info-card.red .value { color: #7f1d1d; }
+
+    .value {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .teacher-select {
+      margin-bottom: 1rem;
+    }
+
+    .teacher-option {
+      background: #fafafa;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .teacher-option:hover {
+      background: #f0f0f0;
+      border-color: #4f46e5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .logo-text h1 {
+        font-size: 1.25rem;
+      }
+
+      .section {
+        padding: 1.5rem;
+      }
+
+      .section-title h2 {
+        font-size: 1.25rem;
+      }
+
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="clouds">
@@ -15,49 +777,829 @@
     <div class="cloud cloud3"></div>
   </div>
 
-  <div class="container">
-    <h1>📘 Управление учебной нагрузкой</h1>
-
-    <section class="form-section">
-      <h2>➕ Добавить преподавателя</h2>
-      <form id="teacherForm">
-        <input name="name" placeholder="ФИО" required />
-        <input name="specialization" placeholder="Специализация" required />
-        <input name="qualification" placeholder="Квалификация" required />
-        <input name="max_hours" type="number" placeholder="Макс. часы" required />
-        <button type="submit">Добавить</button>
-      </form>
-    </section>
-
-    <section class="list-section">
-      <h2>👨‍🏫 Список преподавателей</h2>
-      <ul id="teacherList"></ul>
-    </section>
-
-    <section class="actions-section">
-      <h2>⚙️ Управление нагрузкой</h2>
-      <div class="button-group">
-        <button id="distributeBtn" class="btn-blue">📊 Распределить</button>
-        <button id="assignBtn" class="btn-green">📌 Назначить</button>
-        <button id="removeLoadBtn" class="btn-red">❌ Снять</button>
-        <button id="checkOverloadBtn" class="btn-yellow">⚠️ Проверить перегрузку</button>
-        <button id="reserveBtn" class="btn-purple">🕒 Из резерва</button>
-      </div>
-    </section>
-
-    <section class="report-section">
-      <h2>📄 Отчёты</h2>
-        <div class="button-group">
-          <button class="btn-unified" id="addGroupBtn">➕ Добавить группу</button>
-          <button class="btn-unified" id="reportCurrentBtn">📋 Текущая нагрузка</button>
-          <button class="btn-unified" id="reportSemesterBtn">📅 За семестр</button>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <h1>Управление учебной нагрузкой</h1>
+            <p>Система распределения нагрузки преподавателей</p>
+          </div>
         </div>
-    </section>
+        <div class="header-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Образовательная система</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- Add Teacher Form -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon green">
+            <svg viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="19" y1="8" x2="19" y2="14" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="22" y1="11" x2="16" y2="11" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="section-title">
+            <h2>Добавить преподавателя</h2>
+          </div>
+        </div>
+
+        <form id="teacherForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                ФИО преподавателя
+              </label>
+              <input type="text" name="name" class="form-input" placeholder="Иванов Иван Иванович" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <svg viewBox="0 0 24 24">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Специализация
+              </label>
+              <input type="text" name="specialization" class="form-input" placeholder="Математика, Физика..." required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="8" r="7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Квалификация
+              </label>
+              <input type="text" name="qualification" class="form-input" placeholder="Кандидат наук, Профессор..." required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="12 6 12 12 16 14" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Максимальные часы
+              </label>
+              <input type="number" name="max_hours" class="form-input" placeholder="900" min="0" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <svg viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="19" y1="8" x2="19" y2="14" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="22" y1="11" x2="16" y2="11" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Добавить преподавателя
+          </button>
+        </form>
+      </section>
+
+      <!-- Teacher List -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon blue">
+            <svg viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="section-title">
+            <h2>Список преподавателей</h2>
+            <p>Всего преподавателей: <span id="teacherCount">0</span></p>
+          </div>
+        </div>
+
+        <div id="teacherList" class="teacher-list">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p>Преподавателей пока нет</p>
+            <small>Добавьте первого преподавателя, используя форму выше</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- Actions Panel -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <h2>Управление нагрузкой</h2>
+            <p>Инструменты для работы с учебной нагрузкой</p>
+          </div>
+        </div>
+
+        <div class="action-grid">
+          <button class="action-btn" onclick="handleDistribute()">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="20" x2="12" y2="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="18" y1="20" x2="18" y2="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="6" y1="20" x2="6" y2="16" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Распределить нагрузку</p>
+          </button>
+
+          <button class="action-btn" onclick="handleAssign()">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="10" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Назначить нагрузку</p>
+          </button>
+
+          <button class="action-btn" onclick="handleRemoveLoad()">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Снять нагрузку</p>
+          </button>
+
+          <button class="action-btn" onclick="handleCheckOverload()">
+            <svg viewBox="0 0 24 24">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="17" x2="12.01" y2="17" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Проверить перегрузку</p>
+          </button>
+
+          <button class="action-btn" onclick="handleReserve()">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="12 6 12 12 16 14" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Из резерва</p>
+          </button>
+        </div>
+      </section>
+
+      <!-- Reports Panel -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <h2>Отчеты и аналитика</h2>
+            <p>Просмотр статистики и создание отчетов</p>
+          </div>
+        </div>
+
+        <div class="action-grid">
+          <button class="action-btn" onclick="handleAddGroup()" style="--from: #4f46e5; --to: #4338ca;">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="5" y1="12" x2="19" y2="12" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Добавить группу</p>
+          </button>
+
+          <button class="action-btn" onclick="handleCurrentReport()" style="--from: #3b82f6; --to: #2563eb;">
+            <svg viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="14 2 14 8 20 8" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="13" x2="8" y2="13" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="17" x2="8" y2="17" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="10 9 9 9 8 9" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Текущая нагрузка</p>
+          </button>
+
+          <button class="action-btn" onclick="handleSemesterReport()" style="--from: #a855f7; --to: #9333ea;">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="2" x2="16" y2="6" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="8" y1="2" x2="8" y2="6" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="3" y1="10" x2="21" y2="10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Отчет за семестр</p>
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <button class="modal-close" onclick="closeModal()">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div id="modalContent" class="modal-content"></div>
+    </div>
   </div>
 
+  <script>
+    console.log("✅ Скрипт загружен");
 
-  <div id="modalOverlay" class="modal-overlay">
-    <div class="modal" id="modalContent"></div>
-  </div>
+    let teachers = [];
+    let groups = [];
+    let teachingLoads = [];
+
+    // Загрузка данных при старте
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log("📥 DOM загружен, начинаем загрузку данных");
+      await loadTeachers();
+      await loadGroups();
+      setupForm();
+    });
+
+    // Загрузка преподавателей
+    async function loadTeachers() {
+      try {
+        console.log("📥 Загрузка преподавателей...");
+        const response = await fetch('/teachers');
+        if (!response.ok) throw new Error('Ошибка загрузки преподавателей');
+        
+        teachers = await response.json();
+        console.log("✅ Загружено преподавателей:", teachers.length);
+        renderTeachers();
+      } catch (error) {
+        console.error("❌ Ошибка загрузки преподавателей:", error);
+        alert('Не удалось загрузить список преподавателей');
+      }
+    }
+
+    // Загрузка групп
+    async function loadGroups() {
+      try {
+        console.log("📥 Загрузка групп...");
+        const response = await fetch('/groups');
+        if (!response.ok) throw new Error('Ошибка загрузки групп');
+        
+        groups = await response.json();
+        console.log("✅ Загружено групп:", groups.length);
+      } catch (error) {
+        console.error("❌ Ошибка загрузки групп:", error);
+      }
+    }
+
+    // Отрисовка списка преподавателей
+    function renderTeachers() {
+      const list = document.getElementById('teacherList');
+      const count = document.getElementById('teacherCount');
+      
+      count.textContent = teachers.length;
+
+      if (teachers.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p>Преподавателей пока нет</p>
+            <small>Добавьте первого преподавателя, используя форму выше</small>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = teachers.map(teacher => {
+        // В вашем бэкенде нет поля currentHours, устанавливаем 0
+        const currentHours = 0;
+        const percentage = (currentHours / teacher.max_hours) * 100;
+        let progressColor = 'green';
+        if (percentage >= 90) progressColor = 'red';
+        else if (percentage >= 70) progressColor = 'yellow';
+
+        return `
+          <div class="teacher-card">
+            <div class="teacher-card-content">
+              <div class="teacher-info">
+                <div class="teacher-header">
+                  <div>
+                    <h3 class="teacher-name">${teacher.name}</h3>
+                    <div class="teacher-meta">
+                      <span class="teacher-meta-item">
+                        <svg viewBox="0 0 24 24">
+                          <circle cx="12" cy="8" r="7" stroke-linecap="round" stroke-linejoin="round"/>
+                          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        ${teacher.qualification}
+                      </span>
+                      <span class="teacher-meta-item">
+                        <svg viewBox="0 0 24 24">
+                          <line x1="12" y1="20" x2="12" y2="10" stroke-linecap="round" stroke-linejoin="round"/>
+                          <line x1="18" y1="20" x2="18" y2="4" stroke-linecap="round" stroke-linejoin="round"/>
+                          <line x1="6" y1="20" x2="6" y2="16" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        ${teacher.specialization}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="teacher-load">
+                  <div class="load-header">
+                    <span class="load-text">
+                      <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="12 6 12 12 16 14" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Нагрузка: ${currentHours} / ${teacher.max_hours} часов
+                    </span>
+                    <span class="load-percentage">${percentage.toFixed(0)}%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill ${progressColor}" style="width: ${Math.min(percentage, 100)}%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="btn-actions">
+                <button class="btn-edit" onclick="editTeacher(${teacher.id})">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span class="lg:hidden">Изменить</span>
+                </button>
+                <button class="btn-delete" onclick="deleteTeacher(${teacher.id})">
+                  <svg viewBox="0 0 24 24">
+                    <polyline points="3 6 5 6 21 6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span class="lg:hidden">Удалить</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Настройка формы добавления преподавателя
+    function setupForm() {
+      const form = document.getElementById('teacherForm');
+      if (!form) {
+        console.warn("⚠️ Форма не найдена");
+        return;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log("✅ Отправка формы");
+
+        const formData = new FormData(form);
+        const teacher = {
+          name: formData.get('name'),
+          specialization: formData.get('specialization'),
+          qualification: formData.get('qualification'),
+          max_hours: parseInt(formData.get('max_hours'))
+        };
+
+        try {
+          const response = await fetch('/teachers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(teacher)
+          });
+
+          if (response.ok) {
+            console.log("✅ Преподаватель добавлен");
+            form.reset();
+            await loadTeachers();
+          } else {
+            const error = await response.text();
+            console.error("❌ Ошибка при добавлении:", error);
+            alert('Ошибка при добавлении преподавателя');
+          }
+        } catch (error) {
+          console.error("❌ Сбой при отправке:", error);
+          alert('Ошибка сети');
+        }
+      });
+    }
+
+    // Удаление преподавателя
+    async function deleteTeacher(id) {
+      if (!confirm('Вы уверены, что хотите удалить этого преподавателя?')) return;
+
+      try {
+        console.log("🗑 Удаление преподавателя:", id);
+        const response = await fetch(`/teachers/${id}`, { method: 'DELETE' });
+        
+        if (response.ok) {
+          console.log("✅ Преподаватель удален");
+          await loadTeachers();
+        } else {
+          const error = await response.text();
+          console.error("❌ Ошибка при удалении:", error);
+          alert('Ошибка при удалении преподавателя');
+        }
+      } catch (error) {
+        console.error("❌ Сбой при удалении:", error);
+        alert('Ошибка сети');
+      }
+    }
+
+    // Редактирование преподавателя
+    function editTeacher(id) {
+      const teacher = teachers.find(t => t.id === id);
+      if (!teacher) return;
+
+      openModal(`
+        <h3>Редактировать: ${teacher.name}</h3>
+        <form id="editForm" onsubmit="updateTeacher(event, ${id})">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Специализация</label>
+              <input type="text" name="specialization" class="form-input" value="${teacher.specialization}" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Квалификация</label>
+              <input type="text" name="qualification" class="form-input" value="${teacher.qualification}" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Максимальные часы</label>
+              <input type="number" name="max_hours" class="form-input" value="${teacher.max_hours}" required />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+            💾 Сохранить изменения
+          </button>
+        </form>
+      `);
+    }
+
+    // Обновление преподавателя
+    async function updateTeacher(event, id) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      
+      const data = {
+        specialization: formData.get('specialization'),
+        qualification: formData.get('qualification'),
+        max_hours: parseInt(formData.get('max_hours'))
+      };
+
+      try {
+        const response = await fetch(`/teachers/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          console.log("✅ Преподаватель обновлен");
+          closeModal();
+          await loadTeachers();
+        } else {
+          const error = await response.text();
+          console.error("❌ Ошибка при обновлении:", error);
+          alert('Ошибка при обновлении преподавателя');
+        }
+      } catch (error) {
+        console.error("❌ Сбой при обновлении:", error);
+        alert('Ошибка сети');
+      }
+    }
+
+    // Модальные окна
+    function openModal(content) {
+      document.getElementById('modalContent').innerHTML = content;
+      document.getElementById('modalOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(event) {
+      if (!event || event.target === document.getElementById('modalOverlay')) {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Обработчики действий
+    async function handleDistribute() {
+      try {
+        const response = await fetch('/distribute', { method: 'POST' });
+        const data = await response.json();
+        
+        openModal(`
+          <h3>Распределение нагрузки</h3>
+          <p>${data.message}</p>
+          <div class="info-card blue">
+            <h4>Автоматическое распределение</h4>
+            <p>Нагрузка успешно распределена между преподавателями</p>
+          </div>
+        `);
+      } catch (error) {
+        console.error("❌ Ошибка распределения:", error);
+        alert('Ошибка при распределении нагрузки');
+      }
+    }
+
+    async function handleAssign() {
+      if (teachers.length === 0 || groups.length === 0) {
+        openModal(`
+          <h3>Назначение нагрузки</h3>
+          <div class="info-card red">
+            <h4>Недостаточно данных</h4>
+            <p>Добавьте преподавателей и группы для назначения нагрузки</p>
+          </div>
+        `);
+        return;
+      }
+
+      const teacherOptions = teachers.map(t => `
+        <div class="teacher-option" onclick="selectTeacher(${t.id})">
+          <h4>${t.name}</h4>
+          <p style="color: #525252;">Доступно: ${t.max_hours} часов</p>
+        </div>
+      `).join('');
+
+      const groupOptions = groups.map(g => `
+        <option value="${g.id}">${g.name}</option>
+      `).join('');
+
+      openModal(`
+        <h3>Назначение нагрузки</h3>
+        <p>Выберите преподавателя и группу для назначения нагрузки.</p>
+        <form id="assignForm" onsubmit="submitAssignment(event)">
+          <div class="form-group">
+            <label class="form-label">Преподаватель</label>
+            <select name="teacher_id" class="form-input" required>
+              <option value="">Выберите преподавателя</option>
+              ${teachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Группа</label>
+            <select name="group_id" class="form-input" required>
+              <option value="">Выберите группу</option>
+              ${groupOptions}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+            Назначить нагрузку
+          </button>
+        </form>
+      `);
+    }
+
+    async function submitAssignment(event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      
+      const data = {
+        teacher_id: parseInt(formData.get('teacher_id')),
+        group_id: parseInt(formData.get('group_id'))
+      };
+
+      try {
+        const response = await fetch('/assign_load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        alert(result.message);
+        closeModal();
+        await loadTeachers();
+      } catch (error) {
+        console.error("❌ Ошибка назначения:", error);
+        alert('Ошибка при назначении нагрузки');
+      }
+    }
+
+    async function handleRemoveLoad() {
+      if (teachers.length === 0 || groups.length === 0) {
+        openModal(`
+          <h3>Снятие нагрузки</h3>
+          <div class="info-card red">
+            <h4>Недостаточно данных</h4>
+            <p>Нет данных для снятия нагрузки</p>
+          </div>
+        `);
+        return;
+      }
+
+      openModal(`
+        <h3>Снятие нагрузки</h3>
+        <form id="removeForm" onsubmit="submitRemoveLoad(event)">
+          <div class="form-group">
+            <label class="form-label">Преподаватель</label>
+            <select name="teacher_id" class="form-input" required>
+              <option value="">Выберите преподавателя</option>
+              ${teachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Группа</label>
+            <select name="group_id" class="form-input" required>
+              <option value="">Выберите группу</option>
+              ${groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+            Снять нагрузку
+          </button>
+        </form>
+      `);
+    }
+
+    async function submitRemoveLoad(event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      
+      const data = {
+        teacher_id: parseInt(formData.get('teacher_id')),
+        group_id: parseInt(formData.get('group_id'))
+      };
+
+      try {
+        const response = await fetch('/remove_load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        alert(result.message);
+        closeModal();
+        await loadTeachers();
+      } catch (error) {
+        console.error("❌ Ошибка снятия нагрузки:", error);
+        alert('Ошибка при снятии нагрузки');
+      }
+    }
+
+    async function handleCheckOverload() {
+      try {
+        const response = await fetch('/check_overload');
+        const data = await response.json();
+        
+        openModal(`
+          <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: #ca8a04; stroke-width: 2; fill: none;">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="17" x2="12.01" y2="17" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Проверка перегрузки
+          </h3>
+          <div class="info-card green">
+            <h4>${data.message}</h4>
+            <p>Все преподаватели работают в пределах нормы</p>
+          </div>
+        `);
+      } catch (error) {
+        console.error("❌ Ошибка проверки:", error);
+        alert('Ошибка при проверке перегрузки');
+      }
+    }
+
+    async function handleReserve() {
+      try {
+        const response = await fetch('/assign_from_reserve', { method: 'POST' });
+        const data = await response.json();
+        
+        openModal(`
+          <h3>Назначение из резерва</h3>
+          <p>${data.message}</p>
+          <div class="info-card" style="background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%); border: 1px solid #e9d5ff;">
+            <h4 style="color: #581c87;">Назначение выполнено</h4>
+          </div>
+        `);
+      } catch (error) {
+        console.error("❌ Ошибка резерва:", error);
+        alert('Ошибка при назначении из резерва');
+      }
+    }
+
+    async function handleAddGroup() {
+      openModal(`
+        <h3>Добавить учебную группу</h3>
+        <form id="groupForm" onsubmit="submitGroup(event)">
+          <div class="form-group">
+            <label class="form-label">Название группы</label>
+            <input type="text" name="name" class="form-input" placeholder="ИСП-21" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Год обучения</label>
+            <input type="number" name="year" class="form-input" placeholder="1" min="1" max="5" required />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+            Добавить группу
+          </button>
+        </form>
+      `);
+    }
+
+    async function submitGroup(event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      
+      const group = {
+        name: formData.get('name'),
+        year: parseInt(formData.get('year'))
+      };
+
+      try {
+        const response = await fetch('/groups', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(group)
+        });
+
+        if (response.ok) {
+          alert('Группа успешно добавлена!');
+          closeModal();
+          await loadGroups();
+        } else {
+          const error = await response.text();
+          console.error("❌ Ошибка при добавлении группы:", error);
+          alert('Ошибка при добавлении группы');
+        }
+      } catch (error) {
+        console.error("❌ Сбой при добавлении группы:", error);
+        alert('Ошибка сети');
+      }
+    }
+
+    async function handleCurrentReport() {
+      try {
+        const response = await fetch('/report/current');
+        const data = await response.json();
+        
+        openModal(`
+          <h3>Отчет по текущей нагрузке</h3>
+          <div class="info-card blue">
+            <p style="color: #525252; margin-bottom: 0.5rem;">Информация</p>
+            <p class="value">${data.report}</p>
+          </div>
+        `);
+      } catch (error) {
+        console.error("❌ Ошибка отчета:", error);
+        alert('Ошибка при получении отчета');
+      }
+    }
+
+    async function handleSemesterReport() {
+      try {
+        const response = await fetch('/report/semester');
+        const data = await response.json();
+        
+        openModal(`
+          <h3>Отчет за семестр</h3>
+          <div class="info-card purple">
+            <p style="color: #525252; margin-bottom: 0.5rem;">Информация</p>
+            <p class="value">${data.report}</p>
+          </div>
+        `);
+      } catch (error) {
+        console.error("❌ Ошибка отчета:", error);
+        alert('Ошибка ��ри получении отчета');
+      }
+    }
+
+    // Закрытие модального окна по Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
 </body>
 </html>
