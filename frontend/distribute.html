@@ -1,43 +1,1393 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Распределение нагрузки</title>
-  <link rel="stylesheet" href="/static/style.css">
-  <script src="/static/script_distribute.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Распределение учебной нагрузки</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 50%, #fae8ff 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Cloud Background Animation */
+    .clouds {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .cloud {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.3;
+    }
+
+    .cloud1 {
+      top: 80px;
+      left: 40px;
+      width: 384px;
+      height: 384px;
+      background: #93c5fd;
+      animation: float1 30s linear infinite;
+    }
+
+    .cloud2 {
+      top: 160px;
+      right: 80px;
+      width: 320px;
+      height: 320px;
+      background: #c4b5fd;
+      animation: float2 25s linear infinite;
+    }
+
+    .cloud3 {
+      bottom: 80px;
+      left: 33%;
+      width: 288px;
+      height: 288px;
+      background: #a5b4fc;
+      animation: float3 35s linear infinite;
+    }
+
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(100px, 50px); }
+    }
+
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-80px, 30px); }
+    }
+
+    @keyframes float3 {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(60px, -40px); }
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Header */
+    header {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      animation: slideDown 0.5s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 0;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      padding: 0.75rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 32px;
+      height: 32px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .logo-text h1 {
+      font-size: 1.75rem;
+      color: #171717;
+      margin-bottom: 0.25rem;
+    }
+
+    .logo-text p {
+      font-size: 0.875rem;
+      color: #737373;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .btn-nav-primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-nav-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-nav svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Main Content */
+    main {
+      padding: 2rem 0;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    .section:nth-child(1) { animation-delay: 0.1s; }
+    .section:nth-child(2) { animation-delay: 0.2s; }
+    .section:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-icon {
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .section-icon.blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+    }
+
+    .section-icon.green {
+      background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    }
+
+    .section-icon.purple {
+      background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+    }
+
+    .section-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .section-title {
+      flex: 1;
+    }
+
+    .section-title h2 {
+      font-size: 1.5rem;
+      color: #171717;
+      margin-bottom: 0.25rem;
+    }
+
+    .section-title p {
+      font-size: 0.875rem;
+      color: #737373;
+    }
+
+    /* Distribution Controls */
+    .distribution-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .control-card {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .control-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .control-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+
+    .control-icon.blue { background: #dbeafe; }
+    .control-icon.green { background: #dcfce7; }
+    .control-icon.purple { background: #f3e8ff; }
+
+    .control-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .control-icon.blue svg { color: #2563eb; }
+    .control-icon.green svg { color: #16a34a; }
+    .control-icon.purple svg { color: #9333ea; }
+
+    .control-card h3 {
+      font-size: 1.125rem;
+      color: #171717;
+      margin-bottom: 0.5rem;
+    }
+
+    .control-card p {
+      color: #525252;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Assignment Grid */
+    .assignment-grid {
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    }
+
+    .teacher-card {
+      background: linear-gradient(135deg, white 0%, #fafafa 100%);
+      border: 1px solid #e5e5e5;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      transition: all 0.3s;
+      animation: slideInLeft 0.3s ease-out;
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .teacher-card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .teacher-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+    }
+
+    .teacher-name {
+      font-size: 1.25rem;
+      color: #171717;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .teacher-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      color: #525252;
+      font-size: 0.875rem;
+    }
+
+    .teacher-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .teacher-meta-item svg {
+      width: 16px;
+      height: 16px;
+      stroke: #4f46e5;
+      stroke-width: 2;
+      fill: none;
+      flex-shrink: 0;
+    }
+
+    .teacher-load {
+      margin: 1.25rem 0;
+    }
+
+    .load-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .load-text {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #404040;
+      font-size: 0.875rem;
+    }
+
+    .load-text svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .load-percentage {
+      color: #525252;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #e5e5e5;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.5s ease-out;
+    }
+
+    .progress-fill.green { background: #22c55e; }
+    .progress-fill.yellow { background: #eab308; }
+    .progress-fill.red { background: #ef4444; }
+
+    /* Assignment Form */
+    .assignment-form {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #404040;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .form-label svg {
+      width: 16px;
+      height: 16px;
+      stroke: #4f46e5;
+      stroke-width: 2;
+      fill: none;
+      flex-shrink: 0;
+    }
+
+    .form-select, .form-input {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border: 1px solid #d4d4d4;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      background: white;
+      transition: all 0.3s;
+      min-height: 44px;
+    }
+
+    .form-select:focus, .form-input:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .assignment-form .btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    /* Current Assignments */
+    .assignments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .assignment-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 0.75rem;
+      transition: all 0.3s;
+    }
+
+    .assignment-item:hover {
+      border-color: #4f46e5;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+    }
+
+    .assignment-info {
+      flex: 1;
+    }
+
+    .assignment-group {
+      font-weight: 500;
+      color: #171717;
+      margin-bottom: 0.25rem;
+    }
+
+    .assignment-hours {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #525252;
+      font-size: 0.875rem;
+    }
+
+    .assignment-hours svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .assignment-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-edit, .btn-remove {
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-edit {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .btn-edit:hover {
+      background: #dbeafe;
+    }
+
+    .btn-remove {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .btn-remove:hover {
+      background: #fee2e2;
+    }
+
+    .btn-edit svg, .btn-remove svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #737373;
+    }
+
+    .empty-icon {
+      background: #f5f5f5;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+
+    .empty-icon svg {
+      width: 32px;
+      height: 32px;
+      stroke: #a3a3a3;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 0.75rem;
+      color: white;
+      font-weight: 500;
+      z-index: 1000;
+      animation: slideInRight 0.3s ease-out;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      max-width: 300px;
+    }
+
+    .notification.success {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .notification.info {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .logo-text h1 {
+        font-size: 1.25rem;
+      }
+
+      .section {
+        padding: 1.5rem;
+      }
+
+      .section-title h2 {
+        font-size: 1.25rem;
+      }
+
+      .assignment-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .assignment-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .assignment-actions {
+        align-self: flex-end;
+      }
+
+      .distribution-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .teacher-card {
+        padding: 1.25rem;
+      }
+      
+      .assignment-form {
+        padding: 1.25rem;
+        margin-top: 1.25rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📊 Распределение нагрузки</h1>
-    <p>Выберите преподавателя и группу для назначения или снятия нагрузки.</p>
-
-    <div class="form-group">
-      <label for="teacherSelect">Преподаватель:</label>
-      <select id="teacherSelect" class="select"></select>
-    </div>
-
-    <div class="form-group">
-      <label for="groupSelect">Группа:</label>
-      <select id="groupSelect" class="select"></select>
-    </div>
-
-    <div class="button-group">
-      <button onclick="window.location.href='/'" class="btn-blue">⬅️ Назад на главную</button>
-      <button id="assignBtn" class="btn-green">✅ Назначить нагрузку</button>
-      <button id="removeBtn" class="btn-red">❌ Снять нагрузку</button>
-      <button onclick="runDistribute()" class="btn-yellow">🚀 Автораспределение</button>
-    </div>
-
-    <div id="status" class="status"></div>
+  <div class="clouds">
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
   </div>
 
+<header>
+  <div class="container">
+    <div class="header-content">
+      <div class="logo-section">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>Распределение учебной нагрузки</h1>
+          <p>Назначение часов преподавателям по группам</p>
+        </div>
+      </div>
+      <div class="nav-buttons">
+        <a href="/" class="btn-nav btn-nav-primary">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          На главную
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+  <main>
+    <div class="container">
+      <!-- Controls Section -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon blue">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="20" x2="12" y2="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="18" y1="20" x2="18" y2="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="6" y1="20" x2="6" y2="16" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="section-title">
+            <h2>Управление распределением</h2>
+            <p>Автоматическое и ручное распределение учебной нагрузки</p>
+          </div>
+        </div>
+
+        <div class="distribution-controls">
+          <div class="control-card">
+            <div class="control-icon blue">
+              <svg viewBox="0 0 24 24">
+                <path d="M9 17V7m0 10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 0v10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Автоматическое распределение</h3>
+            <p>Система автоматически распределит нагрузку между преподавателями</p>
+            <button class="btn btn-primary" onclick="autoDistribute()">
+              <svg viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="14 2 14 8 20 8" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="16" y1="13" x2="8" y2="13" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="16" y1="17" x2="8" y2="17" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="10 9 9 9 8 9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Запустить
+            </button>
+          </div>
+
+          <div class="control-card">
+            <div class="control-icon green">
+              <svg viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="10" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Проверка перегрузки</h3>
+            <p>Проверить наличие преподавателей с превышением нагрузки</p>
+            <button class="btn btn-primary" onclick="checkOverload()">
+              <svg viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="12" y1="17" x2="12.01" y2="17" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Проверить
+            </button>
+          </div>
+
+          <div class="control-card">
+            <div class="control-icon purple">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="12 6 12 12 16 14" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Назначение из резерва</h3>
+            <p>Использовать резервных преподавателей для распределения</p>
+            <button class="btn btn-primary" onclick="assignFromReserve()">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Назначить
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Teachers Section -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon green">
+            <svg viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="section-title">
+            <h2>Преподаватели и группы</h2>
+            <p>Ручное назначение учебной нагрузки преподавателям</p>
+          </div>
+        </div>
+
+        <div id="teacherGrid" class="assignment-grid">
+          <!-- Teachers will be loaded here -->
+        </div>
+      </section>
+
+      <!-- Current Assignments -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-icon purple">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 17V7m0 10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 0v10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="section-title">
+            <h2>Текущие назначения</h2>
+            <p>Список всех распределенных учебных нагрузок</p>
+          </div>
+        </div>
+
+        <div id="assignmentsList" class="assignments-list">
+          <!-- Current assignments will be loaded here -->
+        </div>
+      </section>
+    </div>
+  </main>
+
   <script>
-    function runDistribute() {
-      fetch("/distribute", { method: "POST" })
-        .then(res => res.json())
-        .then(data => alert(data.message || "✅ Распределение завершено"))
-        .catch(err => alert("❌ Ошибка: " + err.message));
+    console.log("✅ Скрипт страницы распределения нагрузки загружен");
+
+    let teachers = [];
+    let groups = [];
+    let currentAssignments = [];
+
+    // Загрузка данных при старте
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log("📥 DOM загружен, начинаем загрузку данных");
+      await loadTeachers();
+      await loadGroups();
+      await loadCurrentAssignments();
+      renderTeachers();
+      renderCurrentAssignments();
+    });
+
+    // Загрузка преподавателей
+    async function loadTeachers() {
+      try {
+        console.log("📥 Загрузка преподавателей...");
+        const response = await fetch('/teachers');
+        if (!response.ok) throw new Error('Ошибка загрузки преподавателей');
+        
+        teachers = await response.json();
+        console.log("✅ Загружено преподавателей:", teachers.length);
+      } catch (error) {
+        console.error("❌ Ошибка загрузки преподавателей:", error);
+        teachers = [];
+      }
     }
+
+    // Загрузка групп
+    async function loadGroups() {
+      try {
+        console.log("📥 Загрузка групп...");
+        const response = await fetch('/groups');
+        if (!response.ok) throw new Error('Ошибка загрузки групп');
+        
+        groups = await response.json();
+        console.log("✅ Загружено групп:", groups.length);
+      } catch (error) {
+        console.error("❌ Ошибка загрузки групп:", error);
+        groups = [];
+      }
+    }
+
+    // Загрузка текущих назначений
+    async function loadCurrentAssignments() {
+      try {
+        console.log("📥 Загрузка текущих назначений...");
+        const response = await fetch('/teaching_loads');
+        if (!response.ok) throw new Error('Ошибка загрузки назначений');
+        
+        currentAssignments = await response.json();
+        console.log("✅ Загружено назначений:", currentAssignments.length);
+      } catch (error) {
+        console.error("❌ Ошибка загрузки назначений:", error);
+        currentAssignments = [];
+      }
+    }
+
+    // Отрисовка списка преподавателей
+    function renderTeachers() {
+      const grid = document.getElementById('teacherGrid');
+      
+      if (teachers.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p>Преподавателей пока нет</p>
+            <small>Добавьте преподавателей на главной странице</small>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = teachers.map(teacher => {
+        const teacherAssignments = currentAssignments.filter(a => a.teacher_id === teacher.id);
+        const currentHours = teacherAssignments.reduce((sum, a) => sum + a.assigned_hours, 0);
+        const percentage = teacher.max_hours > 0 ? (currentHours / teacher.max_hours) * 100 : 0;
+        
+        let progressColor = 'green';
+        if (percentage >= 90) progressColor = 'red';
+        else if (percentage >= 70) progressColor = 'yellow';
+
+        const assignedGroups = teacherAssignments.map(a => {
+          const group = groups.find(g => g.id === a.group_id);
+          return group ? group.name : 'Неизвестная группа';
+        }).join(', ');
+
+        return `
+          <div class="teacher-card">
+            <div class="teacher-header">
+              <div>
+                <h3 class="teacher-name">${teacher.name}</h3>
+                <div class="teacher-meta">
+                  <div class="teacher-meta-item">
+                    <svg viewBox="0 0 24 24">
+                      <circle cx="12" cy="8" r="7" stroke-linecap="round" stroke-linejoin="round"/>
+                      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${teacher.qualification}
+                  </div>
+                  <div class="teacher-meta-item">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    ${teacher.specialization}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="teacher-load">
+              <div class="load-header">
+                <span class="load-text">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="12 6 12 12 16 14" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Нагрузка: ${currentHours} / ${teacher.max_hours} часов
+                </span>
+                <span class="load-percentage">${percentage.toFixed(0)}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill ${progressColor}" style="width: ${Math.min(percentage, 100)}%"></div>
+              </div>
+            </div>
+
+            ${assignedGroups && `
+              <div class="teacher-meta-item">
+                <svg viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Группы: ${assignedGroups}
+              </div>
+            `}
+
+            <div class="assignment-form">
+              <form onsubmit="assignLoad(event, ${teacher.id})">
+                <div class="form-group">
+                  <label class="form-label">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Выберите группу
+                  </label>
+                  <select name="group_id" class="form-select" required>
+                    <option value="">Выберите группу</option>
+                    ${groups.map(group => `
+                      <option value="${group.id}">${group.name} ${group.year ? `(${group.year} курс)` : ''}</option>
+                    `).join('')}
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">
+                    <svg viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+                      <polyline points="12 6 12 12 16 14" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Количество часов
+                  </label>
+                  <input type="number" name="hours" class="form-input" 
+                         placeholder="Введите количество часов" min="1" 
+                         max="${teacher.max_hours - currentHours}" 
+                         required />
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                  <svg viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="5" y1="12" x2="19" y2="12" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Назначить нагрузку
+                </button>
+              </form>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Отрисовка текущих назначений
+    function renderCurrentAssignments() {
+      const list = document.getElementById('assignmentsList');
+      
+      if (currentAssignments.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M9 17V7m0 10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 0v10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p>Назначений пока нет</p>
+            <small>Назначьте нагрузку преподавателям выше</small>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = currentAssignments.map(assignment => {
+        const teacher = teachers.find(t => t.id === assignment.teacher_id);
+        const group = groups.find(g => g.id === assignment.group_id);
+        
+        if (!teacher || !group) return '';
+
+        return `
+          <div class="assignment-item">
+            <div class="assignment-info">
+              <div class="assignment-group">
+                ${teacher.name} → ${group.name}
+              </div>
+              <div class="assignment-hours">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="12 6 12 12 16 14" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                ${assignment.assigned_hours} академических часов
+                ${assignment.subject && ` • ${assignment.subject}`}
+                ${assignment.semester && ` • Семестр ${assignment.semester}`}
+              </div>
+            </div>
+            <div class="assignment-actions">
+              <button class="btn-edit" onclick="editAssignment(${assignment.id})" title="Изменить">
+                <svg viewBox="0 0 24 24">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="btn-remove" onclick="removeAssignment(${assignment.id})" title="Удалить">
+                <svg viewBox="0 0 24 24">
+                  <polyline points="3 6 5 6 21 6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Назначение нагрузки
+    async function assignLoad(event, teacherId) {
+      event.preventDefault();
+      
+      const formData = new FormData(event.target);
+      const groupId = parseInt(formData.get('group_id'));
+      const hours = parseInt(formData.get('hours'));
+
+      const teacher = teachers.find(t => t.id === teacherId);
+      if (!teacher) {
+        showNotification('Преподаватель не найден', 'error');
+        return;
+      }
+
+      // Проверка доступных часов
+      const currentHours = currentAssignments
+        .filter(a => a.teacher_id === teacherId)
+        .reduce((sum, a) => sum + a.assigned_hours, 0);
+
+      if (currentHours + hours > teacher.max_hours) {
+        showNotification(`Превышена максимальная нагрузка! Доступно: ${teacher.max_hours - currentHours} часов`, 'error');
+        return;
+      }
+
+      // Проверка существующего назначения
+      const existingAssignment = currentAssignments.find(a => 
+        a.teacher_id === teacherId && a.group_id === groupId
+      );
+
+      if (existingAssignment) {
+        showNotification('Нагрузка для этой группы уже назначена. Используйте редактирование.', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/assign_load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            teacher_id: teacherId,
+            group_id: groupId,
+            hours: hours
+          })
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+          showNotification('Нагрузка успешно назначена!', 'success');
+          event.target.reset();
+          await loadCurrentAssignments();
+          renderTeachers();
+          renderCurrentAssignments();
+        } else {
+          showNotification(result.message || 'Ошибка при назначении нагрузки', 'error');
+        }
+      } catch (error) {
+        console.error("❌ Сбой при назначении:", error);
+        showNotification('Ошибка сети при назначении нагрузки', 'error');
+      }
+    }
+
+    // Редактирование назначения
+    async function editAssignment(assignmentId) {
+      const assignment = currentAssignments.find(a => a.id === assignmentId);
+      if (!assignment) return;
+
+      const teacher = teachers.find(t => t.id === assignment.teacher_id);
+      const group = groups.find(g => g.id === assignment.group_id);
+      
+      if (!teacher || !group) return;
+
+      const currentHours = currentAssignments
+        .filter(a => a.teacher_id === assignment.teacher_id && a.id !== assignmentId)
+        .reduce((sum, a) => sum + a.assigned_hours, 0);
+
+      const availableHours = teacher.max_hours - currentHours;
+
+      const newHours = prompt(
+        `Редактирование нагрузки:\n${teacher.name} → ${group.name}\n\nТекущие часы: ${assignment.assigned_hours}\nДоступно часов: ${availableHours}\n\nВведите новое количество часов:`,
+        assignment.assigned_hours
+      );
+
+      if (newHours === null) return;
+
+      const hours = parseInt(newHours);
+      if (isNaN(hours) || hours < 1) {
+        showNotification('Введите корректное количество часов', 'error');
+        return;
+      }
+
+      if (currentHours + hours > teacher.max_hours) {
+        showNotification(`Превышена максимальная нагрузка! Доступно: ${availableHours} часов`, 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/teaching_loads/${assignmentId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assigned_hours: hours })
+        });
+
+        if (response.ok) {
+          showNotification('Нагрузка успешно обновлена!', 'success');
+          await loadCurrentAssignments();
+          renderTeachers();
+          renderCurrentAssignments();
+        } else {
+          const error = await response.text();
+          showNotification('Ошибка при обновлении нагрузки', 'error');
+        }
+      } catch (error) {
+        console.error("❌ Сбой при обновлении:", error);
+        showNotification('Ошибка сети при обновлении нагрузки', 'error');
+      }
+    }
+
+    // Удаление назначения
+    async function removeAssignment(assignmentId) {
+      const assignment = currentAssignments.find(a => a.id === assignmentId);
+      if (!assignment) return;
+
+      const teacher = teachers.find(t => t.id === assignment.teacher_id);
+      const group = groups.find(g => g.id === assignment.group_id);
+      
+      if (!teacher || !group) return;
+
+      if (!confirm(`Удалить назначение нагрузки?\n${teacher.name} → ${group.name}\n${assignment.assigned_hours} часов`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/teaching_loads/${assignmentId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showNotification('Назначение успешно удалено!', 'success');
+          await loadCurrentAssignments();
+          renderTeachers();
+          renderCurrentAssignments();
+        } else {
+          const error = await response.text();
+          showNotification('Ошибка при удалении назначения', 'error');
+        }
+      } catch (error) {
+        console.error("❌ Сбой при удалении:", error);
+        showNotification('Ошибка сети при удалении назначения', 'error');
+      }
+    }
+
+    // Автоматическое распределение
+    async function autoDistribute() {
+      try {
+        const response = await fetch('/distribute', { method: 'POST' });
+        const result = await response.json();
+        
+        showNotification(result.message || 'Распределение завершено', 'success');
+        await loadCurrentAssignments();
+        renderTeachers();
+        renderCurrentAssignments();
+      } catch (error) {
+        console.error("❌ Ошибка распределения:", error);
+        showNotification('Ошибка при автоматическом распределении', 'error');
+      }
+    }
+
+    // Проверка перегрузки
+    async function checkOverload() {
+      try {
+        const response = await fetch('/check_overload');
+        const result = await response.json();
+        
+        showNotification(result.message || 'Проверка перегрузки завершена', 'success');
+        
+        // Подсветка преподавателей с перегрузкой
+        teachers.forEach(teacher => {
+          const currentHours = currentAssignments
+            .filter(a => a.teacher_id === teacher.id)
+            .reduce((sum, a) => sum + a.assigned_hours, 0);
+          
+          if (currentHours > teacher.max_hours) {
+            const teacherCard = document.querySelector(`[data-teacher-id="${teacher.id}"]`);
+            if (teacherCard) {
+              teacherCard.style.borderColor = '#ef4444';
+              teacherCard.style.boxShadow = '0 0 0 2px #ef4444';
+            }
+          }
+        });
+      } catch (error) {
+        console.error("❌ Ошибка проверки:", error);
+        showNotification('Ошибка при проверке перегрузки', 'error');
+      }
+    }
+
+    // Назначение из резерва
+    async function assignFromReserve() {
+      try {
+        const response = await fetch('/assign_from_reserve', { method: 'POST' });
+        const result = await response.json();
+        
+        showNotification(result.message || 'Назначение из резерва выполнено', 'success');
+        await loadCurrentAssignments();
+        renderTeachers();
+        renderCurrentAssignments();
+      } catch (error) {
+        console.error("❌ Ошибка резерва:", error);
+        showNotification('Ошибка при назначении из резерва', 'error');
+      }
+    }
+
+    // Функция для показа уведомлений
+    function showNotification(message, type = 'info') {
+      // Создаем элемент уведомления
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+
+      // Удаляем уведомление через 3 секунды
+      setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in forwards';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    // Автообновление данных каждые 30 секунд
+    setInterval(async () => {
+      await loadTeachers();
+      await loadGroups();
+      await loadCurrentAssignments();
+      renderTeachers();
+      renderCurrentAssignments();
+    }, 30000);
+
+    console.log("✅ Страница распределения нагрузки полностью загружена и готова к работе");
   </script>
 </body>
 </html>

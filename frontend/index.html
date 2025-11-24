@@ -923,22 +923,22 @@
         </div>
 
         <div class="action-grid">
-          <button class="action-btn" onclick="handleDistribute()">
+          <a href="distribute.html" class="action-btn" style="text-decoration: none; display: block;">
             <svg viewBox="0 0 24 24">
               <line x1="12" y1="20" x2="12" y2="10" stroke-linecap="round" stroke-linejoin="round"/>
               <line x1="18" y1="20" x2="18" y2="4" stroke-linecap="round" stroke-linejoin="round"/>
               <line x1="6" y1="20" x2="6" y2="16" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <p>Распределить нагрузку</p>
-          </button>
+          </a>
 
-          <button class="action-btn" onclick="handleAssign()">
+          <a href="assign.html" class="action-btn" style="text-decoration: none; display: block;">
             <svg viewBox="0 0 24 24">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke-linecap="round" stroke-linejoin="round"/>
               <circle cx="12" cy="10" r="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <p>Назначить нагрузку</p>
-          </button>
+          </a>
 
           <button class="action-btn" onclick="handleRemoveLoad()">
             <svg viewBox="0 0 24 24">
@@ -1030,13 +1030,14 @@
 
     let teachers = [];
     let groups = [];
-    let teachingLoads = [];
+    let currentAssignments = [];
 
     // Загрузка данных при старте
     document.addEventListener('DOMContentLoaded', async () => {
       console.log("📥 DOM загружен, начинаем загрузку данных");
       await loadTeachers();
       await loadGroups();
+      await loadCurrentAssignments();
       setupForm();
     });
 
@@ -1070,6 +1071,21 @@
       }
     }
 
+    // Загрузка текущих назначений
+    async function loadCurrentAssignments() {
+      try {
+        console.log("📥 Загрузка текущих назначений...");
+        const response = await fetch('/teaching_loads');
+        if (!response.ok) throw new Error('Ошибка загрузки назначений');
+        
+        currentAssignments = await response.json();
+        console.log("✅ Загружено назначений:", currentAssignments.length);
+      } catch (error) {
+        console.error("❌ Ошибка загрузки назначений:", error);
+        currentAssignments = [];
+      }
+    }
+
     // Отрисовка списка преподавателей
     function renderTeachers() {
       const list = document.getElementById('teacherList');
@@ -1096,12 +1112,22 @@
       }
 
       list.innerHTML = teachers.map(teacher => {
-        // В вашем бэкенде нет поля currentHours, устанавливаем 0
-        const currentHours = 0;
-        const percentage = (currentHours / teacher.max_hours) * 100;
+        // Получаем текущие назначения нагрузки для преподавателя
+        const teacherAssignments = currentAssignments.filter(a => a.teacher_id === teacher.id);
+        
+        // Считаем общее количество часов нагрузки
+        const currentHours = teacherAssignments.reduce((sum, a) => sum + a.assigned_hours, 0);
+        
+        const percentage = teacher.max_hours > 0 ? (currentHours / teacher.max_hours) * 100 : 0;
         let progressColor = 'green';
         if (percentage >= 90) progressColor = 'red';
         else if (percentage >= 70) progressColor = 'yellow';
+
+        // Получаем список групп, которые ведет преподаватель
+        const assignedGroups = teacherAssignments.map(a => {
+          const group = groups.find(g => g.id === a.group_id);
+          return group ? `${group.name} (${a.assigned_hours}ч)` : 'Неизвестная группа';
+        }).join(', ');
 
         return `
           <div class="teacher-card">
@@ -1145,6 +1171,15 @@
                     <div class="progress-fill ${progressColor}" style="width: ${Math.min(percentage, 100)}%"></div>
                   </div>
                 </div>
+
+                ${assignedGroups ? `
+                  <div class="teacher-meta-item">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Группы: ${assignedGroups}
+                  </div>
+                ` : ''}
               </div>
 
               <div class="btn-actions">
@@ -1398,6 +1433,7 @@
         const result = await response.json();
         alert(result.message);
         closeModal();
+        await loadCurrentAssignments();
         await loadTeachers();
       } catch (error) {
         console.error("❌ Ошибка назначения:", error);
@@ -1460,6 +1496,7 @@
         const result = await response.json();
         alert(result.message);
         closeModal();
+        await loadCurrentAssignments();
         await loadTeachers();
       } catch (error) {
         console.error("❌ Ошибка снятия нагрузки:", error);
@@ -1592,7 +1629,7 @@
         `);
       } catch (error) {
         console.error("❌ Ошибка отчета:", error);
-        alert('Ошибка ��ри получении отчета');
+        alert('Ошибка при получении отчета');
       }
     }
 

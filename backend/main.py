@@ -232,3 +232,37 @@ def assign_from_reserve():
 @app.get("/check_overload")
 def check_overload():
     return {"message": "Проверка перегрузки завершена"}
+
+# Добавьте эти endpoints в ваш main.py
+
+@app.get("/teaching_loads", response_model=List[schemas.TeachingLoad])
+def get_teaching_loads(db: Session = Depends(get_db)):
+    return db.query(TeachingLoad).all()
+
+@app.post("/teaching_loads", response_model=schemas.TeachingLoad)
+def create_teaching_load(load: schemas.TeachingLoadCreate, db: Session = Depends(get_db)):
+    db_load = TeachingLoad(**load.dict())
+    db.add(db_load)
+    db.commit()
+    db.refresh(db_load)
+    return db_load
+
+@app.put("/teaching_loads/{load_id}", response_model=schemas.TeachingLoad)
+def update_teaching_load(load_id: int, data: dict, db: Session = Depends(get_db)):
+    load = db.query(TeachingLoad).filter(TeachingLoad.id == load_id).first()
+    if load:
+        for key, value in data.items():
+            setattr(load, key, value)
+        db.commit()
+        db.refresh(load)
+        return load
+    return None
+
+@app.delete("/teaching_loads/{load_id}")
+def delete_teaching_load(load_id: int, db: Session = Depends(get_db)):
+    load = db.query(TeachingLoad).filter(TeachingLoad.id == load_id).first()
+    if load:
+        db.delete(load)
+        db.commit()
+        return {"message": "Назначение удалено"}
+    return {"error": "Назначение не найдено"}
