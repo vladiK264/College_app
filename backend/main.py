@@ -10,11 +10,13 @@ import backend.models as models
 import backend.database as database
 import backend.crud as crud
 import backend.schemas as schemas
+import json
 from backend.utils import hash_password, generate_token
 from backend.email_utils import send_email
 from backend.models import Teacher, Group, TeachingLoad
 from backend.schemas import TeachingLoadReport
 
+from fastapi.encoders import jsonable_encoder
 # Инициализация FastAPI
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
@@ -22,6 +24,9 @@ templates = Jinja2Templates(directory="frontend/templates")
 models.Base.metadata.create_all(bind=database.engine)
 
 # Зависимость для подключения к БД
+
+
+
 def get_db():
     db = database.SessionLocal()
     try:
@@ -35,6 +40,25 @@ def load_html(filename: str) -> str:
         return f.read()
 
 # 📄 Страницы
+
+@app.get("/teaching_loads")
+def get_teaching_loads(db: Session = Depends(get_db)):
+    loads = db.query(TeachingLoad).all()
+    result = []
+    for load in loads:
+        result.append({
+            'id': load.id,
+            'teacher_id': load.teacher_id,
+            'group_id': load.group_id,
+            'assigned_hours': load.assigned_hours,
+            'completed_hours': load.completed_hours,
+            'subject': 'Общее' if load.subject == 'РћР±С‰РµРµ' else load.subject,
+            'semester': load.semester,
+            'is_reserved': load.is_reserved
+        })
+    
+    return jsonable_encoder(result)  # Используй jsonable_encoder
+
 @app.get("/", response_class=HTMLResponse)
 def read_root(): return load_html("index.html")
 
@@ -180,7 +204,7 @@ def distribute_load():
 def assign_load(data: dict = Body(...), db: Session = Depends(get_db)):
     teacher_id = data.get("teacher_id")
     group_id = data.get("group_id")
-
+    hours = data.get('hours') 
     if not teacher_id or not group_id:
         return JSONResponse(status_code=400, content={"message": "Нужно указать teacher_id и group_id"})
 
@@ -198,7 +222,7 @@ def assign_load(data: dict = Body(...), db: Session = Depends(get_db)):
         teacher_id=teacher_id,
         group_id=group_id,
         subject="Общее",
-        assigned_hours=20,
+        assigned_hours=hours,
         completed_hours=0,
         semester=1,
         is_reserved=False
@@ -233,8 +257,7 @@ def assign_from_reserve():
 def check_overload():
     return {"message": "Проверка перегрузки завершена"}
 
-# Добавьте эти endpoints в ваш main.py
-
+    
 @app.get("/teaching_loads", response_model=List[schemas.TeachingLoad])
 def get_teaching_loads(db: Session = Depends(get_db)):
     return db.query(TeachingLoad).all()
@@ -266,3 +289,4 @@ def delete_teaching_load(load_id: int, db: Session = Depends(get_db)):
         db.commit()
         return {"message": "Назначение удалено"}
     return {"error": "Назначение не найдено"}
+

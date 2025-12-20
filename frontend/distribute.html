@@ -20,7 +20,6 @@
       line-height: 1.6;
     }
 
-    /* Cloud Background Animation */
     .clouds {
       position: fixed;
       inset: 0;
@@ -86,7 +85,6 @@
       z-index: 10;
     }
 
-    /* Header */
     header {
       background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(12px);
@@ -185,7 +183,6 @@
       fill: none;
     }
 
-    /* Main Content */
     main {
       padding: 2rem 0;
     }
@@ -261,7 +258,6 @@
       color: #737373;
     }
 
-    /* Distribution Controls */
     .distribution-controls {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -354,7 +350,6 @@
       fill: none;
     }
 
-    /* Assignment Grid */
     .assignment-grid {
       display: grid;
       gap: 2rem;
@@ -470,7 +465,6 @@
     .progress-fill.yellow { background: #eab308; }
     .progress-fill.red { background: #ef4444; }
 
-    /* Assignment Form */
     .assignment-form {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -529,7 +523,6 @@
       font-size: 0.9rem;
     }
 
-    /* Current Assignments */
     .assignments-list {
       display: flex;
       flex-direction: column;
@@ -645,7 +638,6 @@
       fill: none;
     }
 
-    /* Notification */
     .notification {
       position: fixed;
       top: 20px;
@@ -694,7 +686,6 @@
       }
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -779,7 +770,6 @@
 
   <main>
     <div class="container">
-      <!-- Controls Section -->
       <section class="section">
         <div class="section-header">
           <div class="section-icon blue">
@@ -854,7 +844,6 @@
         </div>
       </section>
 
-      <!-- Teachers Section -->
       <section class="section">
         <div class="section-header">
           <div class="section-icon green">
@@ -872,11 +861,9 @@
         </div>
 
         <div id="teacherGrid" class="assignment-grid">
-          <!-- Teachers will be loaded here -->
         </div>
       </section>
 
-      <!-- Current Assignments -->
       <section class="section">
         <div class="section-header">
           <div class="section-icon purple">
@@ -891,7 +878,6 @@
         </div>
 
         <div id="assignmentsList" class="assignments-list">
-          <!-- Current assignments will be loaded here -->
         </div>
       </section>
     </div>
@@ -904,7 +890,6 @@
     let groups = [];
     let currentAssignments = [];
 
-    // Загрузка данных при старте
     document.addEventListener('DOMContentLoaded', async () => {
       console.log("📥 DOM загружен, начинаем загрузку данных");
       await loadTeachers();
@@ -914,7 +899,6 @@
       renderCurrentAssignments();
     });
 
-    // Загрузка преподавателей
     async function loadTeachers() {
       try {
         console.log("📥 Загрузка преподавателей...");
@@ -929,7 +913,6 @@
       }
     }
 
-    // Загрузка групп
     async function loadGroups() {
       try {
         console.log("📥 Загрузка групп...");
@@ -944,7 +927,6 @@
       }
     }
 
-    // Загрузка текущих назначений
     async function loadCurrentAssignments() {
       try {
         console.log("📥 Загрузка текущих назначений...");
@@ -959,7 +941,6 @@
       }
     }
 
-    // Отрисовка списка преподавателей
     function renderTeachers() {
       const grid = document.getElementById('teacherGrid');
       
@@ -994,7 +975,7 @@
         }).join(', ');
 
         return `
-          <div class="teacher-card">
+          <div class="teacher-card" data-teacher-id="${teacher.id}">
             <div class="teacher-header">
               <div>
                 <h3 class="teacher-name">${teacher.name}</h3>
@@ -1065,12 +1046,16 @@
                       <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round"/>
                       <polyline points="12 6 12 12 16 14" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    Количество часов
+                    Количество часов (доступно: ${teacher.max_hours - currentHours})
                   </label>
                   <input type="number" name="hours" class="form-input" 
-                         placeholder="Введите количество часов" min="1" 
-                         max="${teacher.max_hours - currentHours}" 
+                         placeholder="Введите количество часов" 
+                         min="1" 
+                         max="100" 
                          required />
+                  <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                    Максимальная нагрузка преподавателя: ${teacher.max_hours} часов (максимум: 100 часов)
+                  </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
@@ -1087,7 +1072,6 @@
       }).join('');
     }
 
-    // Отрисовка текущих назначений
     function renderCurrentAssignments() {
       const list = document.getElementById('assignmentsList');
       
@@ -1147,7 +1131,6 @@
       }).join('');
     }
 
-    // Назначение нагрузки
     async function assignLoad(event, teacherId) {
       event.preventDefault();
       
@@ -1161,7 +1144,16 @@
         return;
       }
 
-      // Проверка доступных часов
+      if (hours > 100) {
+        showNotification('Нельзя назначить больше 100 часов!', 'error');
+        return;
+      }
+
+      if (hours > teacher.max_hours) {
+        showNotification(`Нельзя назначить больше ${teacher.max_hours} часов для этого преподавателя!`, 'error');
+        return;
+      }
+
       const currentHours = currentAssignments
         .filter(a => a.teacher_id === teacherId)
         .reduce((sum, a) => sum + a.assigned_hours, 0);
@@ -1171,7 +1163,6 @@
         return;
       }
 
-      // Проверка существующего назначения
       const existingAssignment = currentAssignments.find(a => 
         a.teacher_id === teacherId && a.group_id === groupId
       );
@@ -1209,7 +1200,6 @@
       }
     }
 
-    // Редактирование назначения
     async function editAssignment(assignmentId) {
       const assignment = currentAssignments.find(a => a.id === assignmentId);
       if (!assignment) return;
@@ -1219,26 +1209,41 @@
       
       if (!teacher || !group) return;
 
-      const currentHours = currentAssignments
+      const hoursWithoutThis = currentAssignments
         .filter(a => a.teacher_id === assignment.teacher_id && a.id !== assignmentId)
         .reduce((sum, a) => sum + a.assigned_hours, 0);
-
-      const availableHours = teacher.max_hours - currentHours;
+      
+      const availableHours = teacher.max_hours - hoursWithoutThis;
 
       const newHours = prompt(
-        `Редактирование нагрузки:\n${teacher.name} → ${group.name}\n\nТекущие часы: ${assignment.assigned_hours}\nДоступно часов: ${availableHours}\n\nВведите новое количество часов:`,
+        `Редактирование нагрузки:\n${teacher.name} → ${group.name}\n\n` +
+        `Текущие часы: ${assignment.assigned_hours}\n` +
+        `Доступно часов: ${availableHours}\n` +
+        `Максимум для преподавателя: ${teacher.max_hours} часов\n` +
+        `Максимальное значение: 100 часов\n\n` +
+        `Введите новое количество часов:`,
         assignment.assigned_hours
       );
 
       if (newHours === null) return;
 
       const hours = parseInt(newHours);
-      if (isNaN(hours) || hours < 1) {
-        showNotification('Введите корректное количество часов', 'error');
+      if (isNaN(hours) || hours < 1 || hours > 100) {
+        showNotification('Введите количество часов от 1 до 100', 'error');
         return;
       }
 
-      if (currentHours + hours > teacher.max_hours) {
+      if (hours > 100) {
+        showNotification('Нельзя назначить больше 100 часов!', 'error');
+        return;
+      }
+
+      if (hours > teacher.max_hours) {
+        showNotification(`Нельзя назначить больше ${teacher.max_hours} часов для этого преподавателя!`, 'error');
+        return;
+      }
+
+      if (hoursWithoutThis + hours > teacher.max_hours) {
         showNotification(`Превышена максимальная нагрузка! Доступно: ${availableHours} часов`, 'error');
         return;
       }
@@ -1265,7 +1270,6 @@
       }
     }
 
-    // Удаление назначения
     async function removeAssignment(assignmentId) {
       const assignment = currentAssignments.find(a => a.id === assignmentId);
       if (!assignment) return;
@@ -1299,8 +1303,11 @@
       }
     }
 
-    // Автоматическое распределение
     async function autoDistribute() {
+      if (!confirm('Автоматическое распределение перезапишет текущие назначения. Продолжить?')) {
+        return;
+      }
+
       try {
         const response = await fetch('/distribute', { method: 'POST' });
         const result = await response.json();
@@ -1315,15 +1322,13 @@
       }
     }
 
-    // Проверка перегрузки
     async function checkOverload() {
       try {
         const response = await fetch('/check_overload');
         const result = await response.json();
         
-        showNotification(result.message || 'Проверка перегрузки завершена', 'success');
+        showNotification(result.message || 'Проверка перегрузки завершена', 'info');
         
-        // Подсветка преподавателей с перегрузкой
         teachers.forEach(teacher => {
           const currentHours = currentAssignments
             .filter(a => a.teacher_id === teacher.id)
@@ -1334,6 +1339,10 @@
             if (teacherCard) {
               teacherCard.style.borderColor = '#ef4444';
               teacherCard.style.boxShadow = '0 0 0 2px #ef4444';
+              setTimeout(() => {
+                teacherCard.style.borderColor = '';
+                teacherCard.style.boxShadow = '';
+              }, 5000);
             }
           }
         });
@@ -1343,7 +1352,6 @@
       }
     }
 
-    // Назначение из резерва
     async function assignFromReserve() {
       try {
         const response = await fetch('/assign_from_reserve', { method: 'POST' });
@@ -1359,15 +1367,12 @@
       }
     }
 
-    // Функция для показа уведомлений
     function showNotification(message, type = 'info') {
-      // Создаем элемент уведомления
       const notification = document.createElement('div');
       notification.className = `notification ${type}`;
       notification.textContent = message;
       document.body.appendChild(notification);
 
-      // Удаляем уведомление через 3 секунды
       setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease-in forwards';
         setTimeout(() => {
@@ -1378,7 +1383,6 @@
       }, 3000);
     }
 
-    // Автообновление данных каждые 30 секунд
     setInterval(async () => {
       await loadTeachers();
       await loadGroups();

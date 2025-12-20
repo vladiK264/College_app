@@ -20,7 +20,6 @@
       line-height: 1.6;
     }
 
-    /* Cloud Background Animation */
     .clouds {
       position: fixed;
       inset: 0;
@@ -86,7 +85,6 @@
       z-index: 10;
     }
 
-    /* Header */
     header {
       background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(12px);
@@ -175,7 +173,6 @@
       font-size: 0.875rem;
     }
 
-    /* Main Content */
     main {
       padding: 2rem 0;
     }
@@ -535,7 +532,6 @@
       fill: none;
     }
 
-    /* Action Grid */
     .action-grid {
       display: grid;
       gap: 1rem;
@@ -560,7 +556,6 @@
     .action-btn:nth-child(2) { animation-delay: 0.45s; --from: #22c55e; --to: #16a34a; }
     .action-btn:nth-child(3) { animation-delay: 0.5s; --from: #ef4444; --to: #dc2626; }
     .action-btn:nth-child(4) { animation-delay: 0.55s; --from: #eab308; --to: #ca8a04; }
-    .action-btn:nth-child(5) { animation-delay: 0.6s; --from: #a855f7; --to: #9333ea; }
 
     @keyframes scaleIn {
       from { opacity: 0; transform: scale(0.9); }
@@ -591,7 +586,6 @@
       margin: 0;
     }
 
-    /* Modal */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -880,7 +874,6 @@
         </form>
       </section>
 
-      <!-- Teacher List -->
       <section class="section">
         <div class="section-header">
           <div class="section-icon blue">
@@ -913,7 +906,6 @@
         </div>
       </section>
 
-      <!-- Actions Panel -->
       <section class="section">
         <div class="section-header">
           <div class="section-title">
@@ -930,14 +922,6 @@
               <line x1="6" y1="20" x2="6" y2="16" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <p>Распределить нагрузку</p>
-          </a>
-
-          <a href="assign.html" class="action-btn" style="text-decoration: none; display: block;">
-            <svg viewBox="0 0 24 24">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="12" cy="10" r="3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <p>Назначить нагрузку</p>
           </a>
 
           <button class="action-btn" onclick="handleRemoveLoad()">
@@ -1032,16 +1016,18 @@
     let groups = [];
     let currentAssignments = [];
 
-    // Загрузка данных при старте
     document.addEventListener('DOMContentLoaded', async () => {
       console.log("📥 DOM загружен, начинаем загрузку данных");
-      await loadTeachers();
-      await loadGroups();
-      await loadCurrentAssignments();
+      await loadAllData();
       setupForm();
     });
 
-    // Загрузка преподавателей
+    async function loadAllData() {
+      await loadTeachers();
+      await loadGroups();
+      await loadCurrentAssignments();
+    }
+
     async function loadTeachers() {
       try {
         console.log("📥 Загрузка преподавателей...");
@@ -1057,7 +1043,6 @@
       }
     }
 
-    // Загрузка групп
     async function loadGroups() {
       try {
         console.log("📥 Загрузка групп...");
@@ -1071,22 +1056,23 @@
       }
     }
 
-    // Загрузка текущих назначений
     async function loadCurrentAssignments() {
       try {
         console.log("📥 Загрузка текущих назначений...");
         const response = await fetch('/teaching_loads');
+        console.log("📥 Ответ сервера:", response.status);
+        
         if (!response.ok) throw new Error('Ошибка загрузки назначений');
         
         currentAssignments = await response.json();
         console.log("✅ Загружено назначений:", currentAssignments.length);
+        console.log("✅ Данные:", currentAssignments);
       } catch (error) {
         console.error("❌ Ошибка загрузки назначений:", error);
         currentAssignments = [];
       }
     }
 
-    // Отрисовка списка преподавателей
     function renderTeachers() {
       const list = document.getElementById('teacherList');
       const count = document.getElementById('teacherCount');
@@ -1112,10 +1098,8 @@
       }
 
       list.innerHTML = teachers.map(teacher => {
-        // Получаем текущие назначения нагрузки для преподавателя
         const teacherAssignments = currentAssignments.filter(a => a.teacher_id === teacher.id);
         
-        // Считаем общее количество часов нагрузки
         const currentHours = teacherAssignments.reduce((sum, a) => sum + a.assigned_hours, 0);
         
         const percentage = teacher.max_hours > 0 ? (currentHours / teacher.max_hours) * 100 : 0;
@@ -1123,7 +1107,6 @@
         if (percentage >= 90) progressColor = 'red';
         else if (percentage >= 70) progressColor = 'yellow';
 
-        // Получаем список групп, которые ведет преподаватель
         const assignedGroups = teacherAssignments.map(a => {
           const group = groups.find(g => g.id === a.group_id);
           return group ? `${group.name} (${a.assigned_hours}ч)` : 'Неизвестная группа';
@@ -1204,7 +1187,6 @@
       }).join('');
     }
 
-    // Настройка формы добавления преподавателя
     function setupForm() {
       const form = document.getElementById('teacherForm');
       if (!form) {
@@ -1234,7 +1216,8 @@
           if (response.ok) {
             console.log("✅ Преподаватель добавлен");
             form.reset();
-            await loadTeachers();
+            await loadAllData();
+            alert('Преподаватель успешно добавлен!');
           } else {
             const error = await response.text();
             console.error("❌ Ошибка при добавлении:", error);
@@ -1247,7 +1230,6 @@
       });
     }
 
-    // Удаление преподавателя
     async function deleteTeacher(id) {
       if (!confirm('Вы уверены, что хотите удалить этого преподавателя?')) return;
 
@@ -1257,7 +1239,7 @@
         
         if (response.ok) {
           console.log("✅ Преподаватель удален");
-          await loadTeachers();
+          await loadAllData();
         } else {
           const error = await response.text();
           console.error("❌ Ошибка при удалении:", error);
@@ -1269,7 +1251,6 @@
       }
     }
 
-    // Редактирование преподавателя
     function editTeacher(id) {
       const teacher = teachers.find(t => t.id === id);
       if (!teacher) return;
@@ -1298,7 +1279,6 @@
       `);
     }
 
-    // Обновление преподавателя
     async function updateTeacher(event, id) {
       event.preventDefault();
       const form = event.target;
@@ -1320,7 +1300,7 @@
         if (response.ok) {
           console.log("✅ Преподаватель обновлен");
           closeModal();
-          await loadTeachers();
+          await loadAllData();
         } else {
           const error = await response.text();
           console.error("❌ Ошибка при обновлении:", error);
@@ -1332,7 +1312,6 @@
       }
     }
 
-    // Модальные окна
     function openModal(content) {
       document.getElementById('modalContent').innerHTML = content;
       document.getElementById('modalOverlay').classList.add('active');
@@ -1346,7 +1325,6 @@
       }
     }
 
-    // Обработчики действий
     async function handleDistribute() {
       try {
         const response = await fetch('/distribute', { method: 'POST' });
@@ -1363,81 +1341,6 @@
       } catch (error) {
         console.error("❌ Ошибка распределения:", error);
         alert('Ошибка при распределении нагрузки');
-      }
-    }
-
-    async function handleAssign() {
-      if (teachers.length === 0 || groups.length === 0) {
-        openModal(`
-          <h3>Назначение нагрузки</h3>
-          <div class="info-card red">
-            <h4>Недостаточно данных</h4>
-            <p>Добавьте преподавателей и группы для назначения нагрузки</p>
-          </div>
-        `);
-        return;
-      }
-
-      const teacherOptions = teachers.map(t => `
-        <div class="teacher-option" onclick="selectTeacher(${t.id})">
-          <h4>${t.name}</h4>
-          <p style="color: #525252;">Доступно: ${t.max_hours} часов</p>
-        </div>
-      `).join('');
-
-      const groupOptions = groups.map(g => `
-        <option value="${g.id}">${g.name}</option>
-      `).join('');
-
-      openModal(`
-        <h3>Назначение нагрузки</h3>
-        <p>Выберите преподавателя и группу для назначения нагрузки.</p>
-        <form id="assignForm" onsubmit="submitAssignment(event)">
-          <div class="form-group">
-            <label class="form-label">Преподаватель</label>
-            <select name="teacher_id" class="form-input" required>
-              <option value="">Выберите преподавателя</option>
-              ${teachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Группа</label>
-            <select name="group_id" class="form-input" required>
-              <option value="">Выберите группу</option>
-              ${groupOptions}
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
-            Назначить нагрузку
-          </button>
-        </form>
-      `);
-    }
-
-    async function submitAssignment(event) {
-      event.preventDefault();
-      const formData = new FormData(event.target);
-      
-      const data = {
-        teacher_id: parseInt(formData.get('teacher_id')),
-        group_id: parseInt(formData.get('group_id'))
-      };
-
-      try {
-        const response = await fetch('/assign_load', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-        alert(result.message);
-        closeModal();
-        await loadCurrentAssignments();
-        await loadTeachers();
-      } catch (error) {
-        console.error("❌ Ошибка назначения:", error);
-        alert('Ошибка при назначении нагрузки');
       }
     }
 
@@ -1496,8 +1399,7 @@
         const result = await response.json();
         alert(result.message);
         closeModal();
-        await loadCurrentAssignments();
-        await loadTeachers();
+        await loadAllData();
       } catch (error) {
         console.error("❌ Ошибка снятия нагрузки:", error);
         alert('Ошибка при снятии нагрузки');
@@ -1585,7 +1487,7 @@
         if (response.ok) {
           alert('Группа успешно добавлена!');
           closeModal();
-          await loadGroups();
+          await loadAllData();
         } else {
           const error = await response.text();
           console.error("❌ Ошибка при добавлении группы:", error);
@@ -1633,10 +1535,71 @@
       }
     }
 
-    // Закрытие модального окна по Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeModal();
     });
+
+  
+async function refreshLoadData() {
+  try {
+    console.log("🔄 Принудительное обновление данных о нагрузке...");
+    
+    await loadAllData();
+    
+    const totalHours = currentAssignments.reduce((sum, a) => sum + a.assigned_hours, 0);
+    alert(`Данные обновлены!\n\nПреподавателей: ${teachers.length}\nГрупп: ${groups.length}\nНазначений: ${currentAssignments.length}\nВсего часов нагрузки: ${totalHours}`);
+    
+    console.log("✅ Данные обновлены");
+  } catch (error) {
+    console.error("❌ Ошибка обновления:", error);
+    alert('Ошибка при обновлении данных');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const oldBtn = document.querySelector('button[onclick="createTestData()"]');
+  if (oldBtn) oldBtn.remove();
+  
+  const refreshBtn = document.createElement('button');
+  refreshBtn.textContent = 'Обновить данные о нагрузке';
+  refreshBtn.style.cssText = `
+    margin: 10px; 
+    padding: 10px 20px; 
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); 
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s;
+  `;
+  
+  refreshBtn.onmouseover = function() {
+    this.style.transform = 'translateY(-2px)';
+    this.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.4)';
+  };
+  
+  refreshBtn.onmouseout = function() {
+    this.style.transform = 'translateY(0)';
+    this.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+  };
+  
+  refreshBtn.onclick = refreshLoadData;
+  
+  const formSection = document.querySelector('.section');
+  if (formSection) {
+    formSection.appendChild(refreshBtn);
+  }
+});
+
+setInterval(() => {
+  console.log("🔄 Автоматическое обновление данных...");
+  loadAllData().then(() => {
+    console.log("✅ Автообновление завершено");
+  });
+}, 30000);
+
   </script>
 </body>
 </html>

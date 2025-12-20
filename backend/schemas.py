@@ -25,6 +25,7 @@ class Teacher(BaseModel):
 
 class GroupCreate(BaseModel):
     name: str
+    year: Optional[int] = None
 
 class Group(BaseModel):
     id: int
@@ -39,10 +40,10 @@ class Group(BaseModel):
 class TeachingLoadCreate(BaseModel):
     teacher_id: int
     group_id: int
-    subject: str
+    subject: Optional[str] = "Общее"
     assigned_hours: int
-    completed_hours: int
-    semester: int
+    completed_hours: Optional[int] = 0
+    semester: Optional[int] = 1 
     is_reserved: bool = False
 
 class TeachingLoad(BaseModel):
