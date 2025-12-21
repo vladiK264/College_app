@@ -1,7 +1,7 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from pydantic import BaseModel
-
+from datetime import datetime
 
 
 class TeacherCreate(BaseModel):
@@ -22,18 +22,22 @@ class Teacher(BaseModel):
 
 
 
-
 class GroupCreate(BaseModel):
     name: str
-    year: Optional[int] = None
+    # Просто используем Field с ограничениями
+    year: int = Field(..., ge=2023, le=2045, description="Год обучения (2023-2045)")
+
+class GroupUpdate(BaseModel):
+    name: Optional[str] = None
+    year: Optional[int] = Field(None, ge=2023, le=2045)
 
 class Group(BaseModel):
     id: int
     name: str
+    year: int
 
     class Config:
         from_attributes = True
-
 
 
 

@@ -78,9 +78,9 @@
     }
 
     .container {
-      max-width: 1280px;
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 0 1.5rem;
+      padding: 0 1rem;
       position: relative;
       z-index: 10;
     }
@@ -187,6 +187,7 @@
       margin-bottom: 2rem;
       animation: fadeInUp 0.5s ease-out forwards;
       opacity: 0;
+      width: 100%;
     }
 
     .section:nth-child(1) { animation-delay: 0.1s; }
@@ -376,6 +377,8 @@
       padding: 1.5rem;
       transition: all 0.3s;
       animation: slideInLeft 0.3s ease-out;
+      width: 100%;
+      max-width: none; 
     }
 
     @keyframes slideInLeft {
@@ -398,11 +401,12 @@
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+        gap: 2rem;
       }
     }
 
     .teacher-info {
-      flex: 1;
+      flex: 2;
     }
 
     .teacher-header {
@@ -478,6 +482,7 @@
       background: #e5e5e5;
       border-radius: 9999px;
       overflow: hidden;
+      min-width: 300px;
     }
 
     .progress-fill {
@@ -1459,7 +1464,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Год обучения</label>
-            <input type="number" name="year" class="form-input" placeholder="1" min="1" max="5" required />
+            <input type="number" name="year" class="form-input" placeholder="1" min="1" max="2045" required />
           </div>
           <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
             Добавить группу
@@ -1599,6 +1604,181 @@ setInterval(() => {
     console.log("✅ Автообновление завершено");
   });
 }, 30000);
+
+
+async function exportToExcel() {
+  try {
+    // Показываем загрузку
+    const modalContent = `
+      <h3>Экспорт отчета</h3>
+      <p>Формирование Excel файла...</p>
+      <div class="info-card blue">
+        <h4>Пожалуйста, подождите</h4>
+        <p>Идет формирование отчета. Это может занять несколько секунд.</p>
+      </div>
+    `;
+    openModal(modalContent);
+    
+    // Запрашиваем файл с сервера
+    const response = await fetch('/report/export/excel');
+    
+    if (!response.ok) {
+      throw new Error('Ошибка при формировании отчета');
+    }
+    
+    // Создаем blob и скачиваем файл
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `отчет_нагрузка_${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    // Закрываем модальное окно
+    closeModal();
+    
+    // Показываем сообщение об успехе
+    setTimeout(() => {
+      alert('Отчет успешно экспортирован в Excel!');
+    }, 500);
+    
+  } catch (error) {
+    console.error("❌ Ошибка экспорта:", error);
+    closeModal();
+    alert('Ошибка при экспорте отчета');
+  }
+}
+
+async function handleCurrentReport() {
+  try {
+    const response = await fetch('/report/current');
+    const data = await response.json();
+    
+    // Форматируем данные в красивый отчет
+    let details = '<div style="margin-top: 1rem;">';
+    details += '<h4>Детали по преподавателям:</h4>';
+    details += '<div style="max-height: 300px; overflow-y: auto; margin-top: 0.5rem;">';
+    
+    data.data.forEach(item => {
+      const statusColor = item["Статус"] === "Перегрузка" ? "#ef4444" : 
+                         item["Статус"] === "Норма" ? "#22c55e" : "#eab308";
+      
+      details += `
+        <div style="padding: 0.75rem; background: #f9fafb; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong>${item["Преподаватель"]}</strong>
+            <span style="background: ${statusColor}; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem;">
+              ${item["Статус"]}
+            </span>
+          </div>
+          <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.875rem;">
+            <span>Нагрузка: ${item["Текущая нагрузка (ч)"]}/${item["Макс. нагрузка (ч)"]}ч</span>
+            <span>Загрузка: ${item["Загрузка (%)"]}%</span>
+          </div>
+        </div>
+      `;
+    });
+    
+    details += '</div></div>';
+    
+    openModal(`
+      <h3>📊 Отчет по текущей нагрузке</h3>
+      <div class="info-card blue">
+        <h4>Сводка</h4>
+        <p>Всего преподавателей: ${data.summary.total_teachers}</p>
+        <p>Перегружено: ${data.summary.overloaded}</p>
+        <p>Средняя загрузка: ${data.summary.average_load}%</p>
+      </div>
+      ${details}
+      <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+        <button onclick="exportToExcel()" class="btn" style="background: #10b981; color: white;">
+          📥 Экспорт в Excel
+        </button>
+        <button onclick="closeModal()" class="btn" style="background: #6b7280; color: white;">
+          Закрыть
+        </button>
+      </div>
+    `);
+    
+  } catch (error) {
+    console.error("❌ Ошибка отчета:", error);
+    alert('Ошибка при получении отчета');
+  }
+}
+
+async function handleSemesterReport() {
+  try {
+    // Сначала спросим семестр
+    const semester = prompt("Введите номер семестра (1 или 2):", "1");
+    if (!semester) return;
+    
+    const response = await fetch(`/report/semester?semester=${semester}`);
+    const data = await response.json();
+    
+    if (!data.data || data.data.length === 0) {
+      openModal(`
+        <h3>Отчет за семестр ${semester}</h3>
+        <div class="info-card red">
+          <h4>Данные отсутствуют</h4>
+          <p>${data.report}</p>
+        </div>
+      `);
+      return;
+    }
+    
+    // Форматируем данные
+    let details = '<div style="margin-top: 1rem;">';
+    details += '<h4>Нагрузка по преподавателям:</h4>';
+    details += '<div style="max-height: 300px; overflow-y: auto; margin-top: 0.5rem;">';
+    
+    data.data.forEach(item => {
+      details += `
+        <div style="padding: 0.75rem; background: #f9fafb; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong>${item["Преподаватель"]}</strong>
+            <span style="background: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem;">
+              ${item["Часов"]} часов
+            </span>
+          </div>
+          <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+            <div>Предметы: ${item["Предметы"]}</div>
+            <div>Группы: ${item["Группы"]}</div>
+          </div>
+        </div>
+      `;
+    });
+    
+    details += '</div></div>';
+    
+    openModal(`
+      <h3>📅 Отчет за семестр ${semester}</h3>
+      <div class="info-card purple">
+        <h4>Сводка</h4>
+        <p>Общая нагрузка: ${data.summary.total_hours} часов</p>
+        <p>Назначений: ${data.summary.total_assignments}</p>
+        <p>Уникальных предметов: ${data.summary.unique_subjects}</p>
+        <p>Преподавателей с нагрузкой: ${data.summary.teachers_with_load}</p>
+      </div>
+      ${details}
+      <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+        <button onclick="exportToExcel()" class="btn" style="background: #10b981; color: white;">
+          📥 Экспорт в Excel
+        </button>
+        <button onclick="closeModal()" class="btn" style="background: #6b7280; color: white;">
+          Закрыть
+        </button>
+      </div>
+    `);
+    
+  } catch (error) {
+    console.error("❌ Ошибка отчета:", error);
+    alert('Ошибка при получении отчета');
+  }
+}
+
 
   </script>
 </body>

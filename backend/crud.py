@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 import backend.models as models
+from fastapi import HTTPException
 import backend.schemas as schemas
 from backend.models import Teacher, Group, TeachingLoad
 from backend.schemas import TeacherUpdate
@@ -46,12 +47,27 @@ def confirm_user_email(db: Session, token: str):
         return True
     return False
 
-def create_group(db: Session, group: schemas.GroupCreate):
-    db_group = models.Group(**group.dict())
+def create_group(db: Session, group: schemas.GroupCreate):  
+    existing_group = db.query(Group).filter(Group.name == group.name).first()
+    if existing_group:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Группа с названием '{group.name}' уже существует"
+        )
+    
+    db_group = Group(
+        name=group.name,
+        year=group.year
+    )
+    
     db.add(db_group)
     db.commit()
     db.refresh(db_group)
     return db_group
+
+
+def get_groups(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(Group).offset(skip).limit(limit).all()
 
 def update_teacher(db: Session, teacher_id: int, data: TeacherUpdate):
     teacher = db.query(Teacher).filter(Teacher.id == teacher_id).first()

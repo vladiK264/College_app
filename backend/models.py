@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, SmallInteger  # ← Добавьте SmallInteger здесь
 from sqlalchemy.orm import relationship
 from backend.database import Base
+from sqlalchemy import CheckConstraint
 
-# 👨‍🏫 Преподаватель
+#  Преподаватель
 class Teacher(Base):
     __tablename__ = "teachers"
 
@@ -17,20 +18,21 @@ class Teacher(Base):
     def __repr__(self):
         return f"<Teacher(id={self.id}, name='{self.name}')>"
 
-# 👥 Группа
+#  Группа
 class Group(Base):
     __tablename__ = "groups"
-
+    
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    year = Column(Integer, nullable=False)
-
+    name = Column(String(100), nullable=False, unique=True)
+    year = Column(SmallInteger, CheckConstraint('year >= 2023 AND year <= 2045'), nullable=False)
+    
+    # Добавьте обратную связь для TeachingLoad
     loads = relationship("TeachingLoad", back_populates="group", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Group(id={self.id}, name='{self.name}', year={self.year})>"
 
-# 📚 Нагрузка
+#  Нагрузка
 class TeachingLoad(Base):
     __tablename__ = "teaching_loads"
 
@@ -49,7 +51,7 @@ class TeachingLoad(Base):
     def __repr__(self):
         return f"<TeachingLoad(id={self.id}, subject='{self.subject}', semester={self.semester})>"
 
-# 👤 Пользователь
+#  Пользователь
 class User(Base):
     __tablename__ = "users"
 
